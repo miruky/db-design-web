@@ -372,7 +372,7 @@ body {
 
 .panel-actions { display: flex; gap: 8px; }
 
-.panel-body { padding: 16px 20px; flex: 1; overflow: auto; min-height: 320px; }
+.panel-body { padding: 16px 20px; flex: 1; overflow: auto; min-height: 320px; display: flex; flex-direction: column; }
 
 /* ---------- Buttons ---------- */
 .btn {
@@ -400,11 +400,11 @@ body {
 
 /* ---------- Code Editor ---------- */
 .editor-wrapper {
-    display: flex; gap: 0;
+    display: flex; flex-direction: row;
     background: var(--editor-bg);
     border: 1px solid hsla(var(--accent-h), 90%, 66%, 0.10);
     border-radius: var(--radius-md);
-    overflow: hidden; min-height: 280px;
+    overflow: hidden; flex: 1; min-height: 0;
 }
 .editor-wrapper:focus-within {
     border-color: hsla(var(--accent-h), 90%, 66%, 0.28);
@@ -417,14 +417,18 @@ body {
     font-size: 0.80rem; font-weight: 400; line-height: 1.7;
     user-select: none; border-right: 1px solid var(--line-num-border);
     min-width: 44px; flex-shrink: 0; background: var(--editor-bg-line);
+    overflow-y: hidden; overflow-x: hidden;
+}
+.line-numbers div {
+    white-space: nowrap;
 }
 
 .code-editor {
-    width: 100%; padding: 18px; background: transparent; border: none;
+    flex: 1; min-width: 0; padding: 18px; background: transparent; border: none;
     color: var(--editor-text); font-family: var(--font-mono);
     font-size: 0.88rem; font-weight: 400; line-height: 1.7;
     resize: none; outline: none; tab-size: 4;
-    min-height: 280px; letter-spacing: 0.01em;
+    letter-spacing: 0.01em;
 }
 .code-editor::placeholder { color: var(--text-muted); }
 .code-editor:focus { outline: none; }
@@ -822,15 +826,20 @@ body {
 /* ---------- Mermaid SVG Theme ---------- */
 .mermaid-output svg .node rect, .mermaid-output svg .node polygon, .mermaid-output svg .node circle { stroke: var(--ac-500) !important; stroke-width: 1.5px !important; }
 .mermaid-output svg .edgeLabel { background-color: var(--glass-bg) !important; }
-.mermaid-output svg .edgePath .path { stroke: var(--ac-500) !important; stroke-width: 2.5px !important; }
-.mermaid-output svg marker path { fill: var(--ac-500) !important; }
+.mermaid-output svg .edgePath .path { stroke: var(--ac-500) !important; stroke-width: 1.5px !important; }
+.mermaid-output svg marker#flowchart-pointEnd path,
+.mermaid-output svg marker#flowchart-pointStart path,
+.mermaid-output svg marker#flowchart-crossEnd path,
+.mermaid-output svg marker#flowchart-crossStart path,
+.mermaid-output svg marker[id^="crosshead"] path,
+.mermaid-output svg marker[id^="arrowhead"] path { fill: var(--ac-500) !important; }
 .mermaid-output svg .entityBox { fill: hsla(var(--accent-h), 90%, 66%, 0.10) !important; stroke: var(--ac-500) !important; stroke-width: 1.5px !important; }
 .mermaid-output svg .entityLabel { fill: var(--ac-200) !important; }
 .mermaid-output svg .relationshipLabelBox { fill: var(--glass-bg) !important; }
-.mermaid-output svg .relationshipLine { stroke: var(--ac-500) !important; stroke-width: 2.5px !important; }
+.mermaid-output svg .relationshipLine { stroke: var(--ac-500) !important; stroke-width: 1.5px !important; }
 .mermaid-output svg .attributeBoxEven, .mermaid-output svg .attributeBoxOdd { stroke: var(--ac-500) !important; stroke-width: 0.8px !important; fill: hsla(var(--accent-h), 90%, 66%, 0.05) !important; }
-.mermaid-output svg .er.relationshipLine { stroke: var(--ac-500) !important; stroke-width: 2.5px !important; }
-.mermaid-output svg circle.relationshipEnd { fill: var(--ac-500) !important; stroke: var(--ac-500) !important; }
+.mermaid-output svg .er.relationshipLine { stroke: var(--ac-500) !important; stroke-width: 1.5px !important; }
+.mermaid-output svg circle.relationshipEnd { fill: transparent !important; stroke: var(--ac-500) !important; stroke-width: 1.5px !important; }
 .mermaid-output svg .entityTitleBox { fill: hsla(var(--accent-h), 90%, 66%, 0.18) !important; }
 
 [data-base="light"] .mermaid-output svg .entityBox { fill: hsla(var(--accent-h), 60%, 92%, 1) !important; }

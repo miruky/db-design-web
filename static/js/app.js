@@ -237,9 +237,10 @@ function initEditorLineNumbers() {
 
 function updateLineNumbers(editor, linesEl) {
     const lineCount = editor.value.split("\n").length;
-    const lines = [];
-    for (let i = 1; i <= Math.max(lineCount, 12); i++) lines.push(i);
-    linesEl.textContent = lines.join("\n");
+    const count = Math.max(lineCount, 12);
+    let html = "";
+    for (let i = 1; i <= count; i++) html += `<div>${i}</div>`;
+    linesEl.innerHTML = html;
 }
 
 /* ===========================================
@@ -564,6 +565,7 @@ async function renderMermaid() {
         if (svgEl) {
             svgEl.style.maxWidth = "100%";
             svgEl.style.height = "auto";
+            fixMermaidERMarkers(svgEl);
         }
         showDownloadButton("btnDownloadMermaid");
         showToast("Mermaid図をレンダリングしました", "success");
@@ -571,6 +573,42 @@ async function renderMermaid() {
         preview.innerHTML = `<div class="result-error" style="margin:20px">構文エラー: ${escapeHtml(err.message || "不正なMermaid記法です")}</div>`;
         showToast("Mermaidの構文エラー", "error");
     }
+}
+
+function fixMermaidERMarkers(svgEl) {
+    const style = getComputedStyle(document.documentElement);
+    const accent = style.getPropertyValue("--ac-500").trim() || "#6366f1";
+    const base = document.documentElement.dataset.base || "dark";
+    const bg = base === "dark" ? "#0f0c1e" : "#ffffff";
+
+    svgEl.querySelectorAll("defs marker").forEach(marker => {
+        const id = marker.id || "";
+        const isER = /ONLY_ONE|ZERO_OR_ONE|ONE_OR_MORE|ZERO_OR_MORE|ERmarker/i.test(id);
+        if (!isER) return;
+
+        marker.querySelectorAll("path").forEach(path => {
+            path.setAttribute("fill", accent);
+            path.setAttribute("stroke", accent);
+            path.setAttribute("stroke-width", "1");
+        });
+        marker.querySelectorAll("circle").forEach(circle => {
+            circle.setAttribute("fill", bg);
+            circle.setAttribute("stroke", accent);
+            circle.setAttribute("stroke-width", "1");
+        });
+
+        if (marker.getAttribute("markerUnits") === "userSpaceOnUse") {
+            const vb = marker.getAttribute("viewBox");
+            if (vb) {
+                const [, , w, h] = vb.split(/[\s,]+/).map(Number);
+                if (w > 20) {
+                    const scale = 18 / w;
+                    marker.setAttribute("markerWidth", Math.round(w * scale));
+                    marker.setAttribute("markerHeight", Math.round(h * scale));
+                }
+            }
+        }
+    });
 }
 
 function loadSampleMermaid() {
