@@ -6,6 +6,7 @@
 let db = null; // sql.js database instance
 
 document.addEventListener("DOMContentLoaded", async () => {
+    initThemePicker();
     initTabs();
     initEditorLineNumbers();
     await initSQLiteWasm();
@@ -14,6 +15,147 @@ document.addEventListener("DOMContentLoaded", async () => {
     initMermaid();
     initPlantUML();
 });
+
+/* ===========================================
+   Theme System (Base + Accent Color)
+   =========================================== */
+const ACCENT_COLORS = [
+    { name: "Purple",  h: 263, color: "#a855f7" },
+    { name: "Violet",  h: 250, color: "#8b5cf6" },
+    { name: "Indigo",  h: 234, color: "#6366f1" },
+    { name: "Blue",    h: 217, color: "#3b82f6" },
+    { name: "Cyan",    h: 188, color: "#06b6d4" },
+    { name: "Teal",    h: 168, color: "#14b8a6" },
+    { name: "Green",   h: 142, color: "#22c55e" },
+    { name: "Lime",    h: 84,  color: "#84cc16" },
+    { name: "Yellow",  h: 48,  color: "#eab308" },
+    { name: "Amber",   h: 38,  color: "#f59e0b" },
+    { name: "Orange",  h: 25,  color: "#f97316" },
+    { name: "Red",     h: 0,   color: "#ef4444" },
+    { name: "Rose",    h: 347, color: "#f43f5e" },
+    { name: "Pink",    h: 330, color: "#ec4899" },
+];
+
+function initThemePicker() {
+    const saved = JSON.parse(localStorage.getItem("dbds-theme") || "{}");
+    const base = saved.base || "dark";
+    const accentH = saved.accentH ?? 263;
+
+    applyTheme(base, accentH, false);
+
+    // Render accent swatches
+    const swatchContainer = document.getElementById("accentSwatches");
+    ACCENT_COLORS.forEach(({ name, h, color }) => {
+        const el = document.createElement("div");
+        el.className = "accent-swatch" + (h === accentH ? " active" : "");
+        el.style.background = color;
+        el.style.setProperty("--swatch-h", h);
+        el.title = name;
+        el.addEventListener("click", () => {
+            swatchContainer.querySelectorAll(".accent-swatch").forEach(s => s.classList.remove("active"));
+            el.classList.add("active");
+            applyTheme(document.documentElement.getAttribute("data-base") || "dark", h, true);
+        });
+        swatchContainer.appendChild(el);
+    });
+
+    // Base toggle
+    document.querySelectorAll(".base-toggle-btn").forEach(btn => {
+        if (btn.dataset.base === base) btn.classList.add("active");
+        else btn.classList.remove("active");
+        btn.addEventListener("click", () => {
+            document.querySelectorAll(".base-toggle-btn").forEach(b => b.classList.remove("active"));
+            btn.classList.add("active");
+            const currentH = parseInt(getComputedStyle(document.documentElement).getPropertyValue("--accent-h")) || 263;
+            applyTheme(btn.dataset.base, currentH, true);
+        });
+    });
+
+    // Dropdown toggle
+    const pickerBtn = document.getElementById("themePickerBtn");
+    const dropdown = document.getElementById("themeDropdown");
+    pickerBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        dropdown.classList.toggle("open");
+    });
+    document.addEventListener("click", (e) => {
+        if (!e.target.closest("#themePicker")) dropdown.classList.remove("open");
+    });
+}
+
+function applyTheme(base, accentH, save) {
+    document.documentElement.setAttribute("data-base", base);
+    document.documentElement.style.setProperty("--accent-h", accentH);
+
+    // Update logo gradient to match accent
+    const logoGrad = document.getElementById("logoGrad");
+    if (logoGrad) {
+        const stops = logoGrad.querySelectorAll("stop");
+        if (stops.length >= 2) {
+            stops[0].setAttribute("stop-color", `hsl(${accentH}, 90%, 66%)`);
+            stops[1].setAttribute("stop-color", `hsl(${(accentH - 23 + 360) % 360}, 84%, 67%)`);
+        }
+    }
+
+    // Re-initialize Mermaid with new colors if already loaded
+    if (typeof mermaid !== "undefined" && save) {
+        initMermaidTheme(accentH, base);
+    }
+
+    if (save) {
+        localStorage.setItem("dbds-theme", JSON.stringify({ base, accentH }));
+        showToast("テーマを変更しました", "success");
+    }
+}
+
+function initMermaidTheme(h, base) {
+    const textLight = `hsl(${h}, 100%, 92%)`;
+    const textMid = `hsl(${h}, 97%, 85%)`;
+    const accent = `hsl(${h}, 90%, 66%)`;
+    const accentDark = `hsl(${h}, 80%, 55%)`;
+    const accentBg = `hsla(${h}, 90%, 66%, 0.15)`;
+    const accentBgFaint = `hsla(${h}, 84%, 67%, 0.08)`;
+    const labelBg = base === "dark" ? "rgba(15, 12, 30, 0.8)" : "rgba(255, 255, 255, 0.85)";
+
+    mermaid.initialize({
+        startOnLoad: false,
+        theme: base === "dark" ? "dark" : "default",
+        themeVariables: {
+            mainBkg: accentBg,
+            nodeBorder: accent,
+            clusterBkg: accentBgFaint,
+            clusterBorder: `hsla(${h}, 90%, 66%, 0.3)`,
+            primaryTextColor: textLight,
+            secondaryTextColor: textMid,
+            tertiaryTextColor: `hsl(${h}, 95%, 75%)`,
+            lineColor: accentDark,
+            entityBorder: accent,
+            entityBkg: `hsla(${h}, 90%, 66%, 0.12)`,
+            edgeLabelBackground: labelBg,
+            classText: textLight,
+            actorBkg: `hsla(${h}, 90%, 66%, 0.20)`,
+            actorBorder: accent,
+            actorTextColor: textLight,
+            signalColor: textMid,
+            signalTextColor: textLight,
+            noteBkgColor: accentBgFaint,
+            noteBorderColor: `hsl(${(h - 23 + 360) % 360}, 84%, 67%)`,
+            noteTextColor: textLight,
+            activationBkgColor: `hsla(${h}, 90%, 66%, 0.20)`,
+            activationBorderColor: accent,
+            labelBoxBkgColor: labelBg,
+            labelBoxBorderColor: accentDark,
+            labelTextColor: textLight,
+            loopTextColor: textMid,
+            background: "transparent",
+        },
+        fontFamily: "'Inter', sans-serif",
+        fontSize: 14,
+        flowchart: { htmlLabels: true, curve: "basis", padding: 20 },
+        er: { fontSize: 13, useMaxWidth: false },
+        sequence: { useMaxWidth: false, actorMargin: 80, mirrorActors: true },
+    });
+}
 
 /* ===========================================
    sql.js Initialization (WebAssembly SQLite)
@@ -170,6 +312,7 @@ function executeSQL() {
         });
 
         resultsEl.innerHTML = html;
+        bindExpandHandlers(resultsEl);
         showToast("実行完了", "success");
         refreshTables();
     } catch (err) {
@@ -385,44 +528,10 @@ function loadSampleMarkdown() {
    Mermaid Functions
    =========================================== */
 function initMermaid() {
-    mermaid.initialize({
-        startOnLoad: false,
-        theme: "dark",
-        themeVariables: {
-            mainBkg: "rgba(139, 92, 246, 0.15)",
-            nodeBorder: "#8b5cf6",
-            clusterBkg: "rgba(99, 102, 241, 0.08)",
-            clusterBorder: "rgba(139, 92, 246, 0.3)",
-            primaryTextColor: "#e9d5ff",
-            secondaryTextColor: "#c4b5fd",
-            tertiaryTextColor: "#a78bfa",
-            lineColor: "#7c3aed",
-            entityBorder: "#8b5cf6",
-            entityBkg: "rgba(139, 92, 246, 0.12)",
-            edgeLabelBackground: "rgba(15, 12, 30, 0.8)",
-            classText: "#e9d5ff",
-            actorBkg: "rgba(139, 92, 246, 0.20)",
-            actorBorder: "#8b5cf6",
-            actorTextColor: "#e9d5ff",
-            signalColor: "#c4b5fd",
-            signalTextColor: "#e9d5ff",
-            noteBkgColor: "rgba(99, 102, 241, 0.15)",
-            noteBorderColor: "#6366f1",
-            noteTextColor: "#e9d5ff",
-            activationBkgColor: "rgba(139, 92, 246, 0.20)",
-            activationBorderColor: "#8b5cf6",
-            labelBoxBkgColor: "rgba(15, 12, 30, 0.6)",
-            labelBoxBorderColor: "#7c3aed",
-            labelTextColor: "#e9d5ff",
-            loopTextColor: "#c4b5fd",
-            background: "transparent",
-        },
-        fontFamily: "'Inter', sans-serif",
-        fontSize: 14,
-        flowchart: { htmlLabels: true, curve: "basis", padding: 20 },
-        er: { fontSize: 13, useMaxWidth: false },
-        sequence: { useMaxWidth: false, actorMargin: 80, mirrorActors: true },
-    });
+    const saved = JSON.parse(localStorage.getItem("dbds-theme") || "{}");
+    const h = saved.accentH ?? 263;
+    const base = saved.base || "dark";
+    initMermaidTheme(h, base);
 
     document.getElementById("btnRenderMermaid").addEventListener("click", renderMermaid);
     document.getElementById("btnMermaidSample").addEventListener("click", loadSampleMermaid);
@@ -538,22 +647,29 @@ function renderPlantUML() {
 }
 
 function stylePlantUMLSvg(svgText) {
+    const h = parseInt(getComputedStyle(document.documentElement).getPropertyValue("--accent-h")) || 263;
+    const ac500 = `hsl(${h}, 90%, 66%)`;
+    const ac700 = `hsl(${h}, 80%, 55%)`;
+    const ac200 = `hsl(${h}, 100%, 92%)`;
+    const ac300 = `hsl(${h}, 97%, 85%)`;
+    const ac2500 = `hsl(${(h - 23 + 360) % 360}, 84%, 67%)`;
+
     return svgText
         .replace(/<svg /, '<svg style="max-width:100%;height:auto;" ')
         .replace(/fill="#[A-Fa-f0-9]{6}"/g, (match) => {
             const c = match.match(/#[A-Fa-f0-9]{6}/)[0].toLowerCase();
-            if (c === '#fefece' || c === '#ffffcc') return 'fill="rgba(139,92,246,0.12)"';
-            if (c === '#ffffff' || c === '#fbfb77') return 'fill="rgba(15,12,30,0.6)"';
-            if (c === '#000000') return 'fill="#e9d5ff"';
-            if (c === '#a80036') return 'fill="#8b5cf6"';
-            if (c === '#181818') return 'fill="#d8b4fe"';
+            if (c === '#fefece' || c === '#ffffcc') return `fill="hsla(${h},90%,66%,0.12)"`;
+            if (c === '#ffffff' || c === '#fbfb77') return `fill="hsla(${h},20%,10%,0.6)"`;
+            if (c === '#000000') return `fill="${ac200}"`;
+            if (c === '#a80036') return `fill="${ac500}"`;
+            if (c === '#181818') return `fill="${ac300}"`;
             return match;
         })
         .replace(/stroke="#[A-Fa-f0-9]{6}"/g, (match) => {
             const c = match.match(/#[A-Fa-f0-9]{6}/)[0].toLowerCase();
-            if (c === '#a80036') return 'stroke="#8b5cf6"';
-            if (c === '#181818') return 'stroke="#7c3aed"';
-            if (c === '#000000') return 'stroke="#6366f1"';
+            if (c === '#a80036') return `stroke="${ac500}"`;
+            if (c === '#181818') return `stroke="${ac700}"`;
+            if (c === '#000000') return `stroke="${ac2500}"`;
             return match;
         });
 }
@@ -704,4 +820,52 @@ function showToast(message, type = "success") {
         toast.style.animation = "toastOut 0.3s ease forwards";
         setTimeout(() => toast.remove(), 300);
     }, 3000);
+}
+
+/* ===========================================
+   Result Table Expand (Click to Zoom)
+   =========================================== */
+function bindExpandHandlers(container) {
+    container.querySelectorAll(".result-table-wrapper").forEach(wrapper => {
+        wrapper.addEventListener("click", (e) => {
+            if (wrapper.classList.contains("expanded")) {
+                collapseTableWrapper(wrapper);
+            } else {
+                expandTableWrapper(wrapper);
+            }
+        });
+    });
+}
+
+function expandTableWrapper(wrapper) {
+    // Create backdrop
+    const backdrop = document.createElement("div");
+    backdrop.className = "expand-backdrop";
+    backdrop.addEventListener("click", () => collapseTableWrapper(wrapper));
+    document.body.appendChild(backdrop);
+
+    // Save original parent info for restore
+    wrapper._expandBackdrop = backdrop;
+    wrapper._origPosition = wrapper.style.position;
+
+    wrapper.classList.add("expanded");
+
+    // Esc to close
+    const escHandler = (e) => {
+        if (e.key === "Escape") { collapseTableWrapper(wrapper); document.removeEventListener("keydown", escHandler); }
+    };
+    wrapper._escHandler = escHandler;
+    document.addEventListener("keydown", escHandler);
+}
+
+function collapseTableWrapper(wrapper) {
+    wrapper.classList.remove("expanded");
+    if (wrapper._expandBackdrop) {
+        wrapper._expandBackdrop.remove();
+        wrapper._expandBackdrop = null;
+    }
+    if (wrapper._escHandler) {
+        document.removeEventListener("keydown", wrapper._escHandler);
+        wrapper._escHandler = null;
+    }
 }
