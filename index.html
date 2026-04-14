@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DB Design Studio</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="static/css/style.css">
+    <!-- sql.js (SQLite in WebAssembly) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.10.3/sql-wasm.js"></script>
+    <!-- Pako (deflate for PlantUML) -->
+    <script src="https://cdn.jsdelivr.net/npm/pako@2/dist/pako.min.js"></script>
+    <!-- Mermaid.js -->
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+    <!-- Marked.js for Markdown -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+</head>
+<body>
+    <!-- Animated Background -->
+    <div class="bg-animation">
+        <div class="orb orb-1"></div>
+        <div class="orb orb-2"></div>
+        <div class="orb orb-3"></div>
+        <div class="orb orb-4"></div>
+        <div class="orb orb-5"></div>
+    </div>
+
+    <!-- Main Container -->
+    <div class="app-container">
+        <!-- Header -->
+        <header class="app-header">
+            <div class="logo">
+                <svg class="logo-icon" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <rect x="2" y="2" width="36" height="36" rx="8" stroke="url(#logoGrad)" stroke-width="2.5" fill="none"/>
+                    <path d="M12 14h16M12 20h16M12 26h16" stroke="url(#logoGrad)" stroke-width="2" stroke-linecap="round"/>
+                    <circle cx="20" cy="20" r="6" fill="url(#logoGrad)" opacity="0.15"/>
+                    <defs>
+                        <linearGradient id="logoGrad" x1="0" y1="0" x2="40" y2="40">
+                            <stop offset="0%" stop-color="#a855f7"/>
+                            <stop offset="100%" stop-color="#6366f1"/>
+                        </linearGradient>
+                    </defs>
+                </svg>
+                <h1>DB Design Studio</h1>
+            </div>
+            <div class="header-actions">
+                <div class="db-status" id="dbStatus">
+                    <span class="status-dot"></span>
+                    <span class="status-text">Initializing...</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Tab Navigation -->
+        <nav class="tab-nav">
+            <button class="tab-btn active" data-tab="sqlite">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <ellipse cx="12" cy="5" rx="9" ry="3"/>
+                    <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/>
+                    <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/>
+                </svg>
+                SQLite
+            </button>
+            <button class="tab-btn" data-tab="markdown">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                    <polyline points="14 2 14 8 20 8"/>
+                    <line x1="16" y1="13" x2="8" y2="13"/>
+                    <line x1="16" y1="17" x2="8" y2="17"/>
+                </svg>
+                Markdown
+            </button>
+            <button class="tab-btn" data-tab="mermaid">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="3" y="3" width="7" height="7" rx="1"/>
+                    <rect x="14" y="3" width="7" height="7" rx="1"/>
+                    <rect x="8" y="14" width="7" height="7" rx="1"/>
+                    <line x1="6.5" y1="10" x2="6.5" y2="14"/>
+                    <line x1="17.5" y1="10" x2="17.5" y2="14"/>
+                </svg>
+                Mermaid
+            </button>
+            <button class="tab-btn" data-tab="plantuml">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="3"/>
+                    <path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/>
+                </svg>
+                PlantUML
+            </button>
+        </nav>
+
+        <!-- Tab Contents -->
+        <main class="tab-contents">
+            <!-- SQLite Tab -->
+            <div class="tab-content active" id="tab-sqlite">
+                <div class="split-view">
+                    <!-- Left: SQL Editor -->
+                    <div class="panel editor-panel">
+                        <div class="panel-header">
+                            <h2>SQL エディタ</h2>
+                            <div class="panel-actions">
+                                <button class="btn btn-secondary btn-sm" id="btnLoadSample" title="サンプルSQL">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                                    サンプル
+                                </button>
+                                <button class="btn btn-primary btn-sm" id="btnExecute">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                                    実行
+                                </button>
+                            </div>
+                        </div>
+                        <div class="panel-body">
+                            <div class="editor-wrapper">
+                                <div class="line-numbers" id="lineNumbers"></div>
+                                <textarea class="code-editor" id="sqlEditor" spellcheck="false" placeholder="-- SQLを入力してください...&#10;-- 例: CREATE TABLE users (&#10;--   id INTEGER PRIMARY KEY,&#10;--   name TEXT NOT NULL&#10;-- );"></textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right: Results -->
+                    <div class="panel results-panel">
+                        <div class="panel-header">
+                            <h2>実行結果</h2>
+                            <div class="panel-actions">
+                                <button class="btn btn-ghost btn-sm" id="btnRefreshTables">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+                                    更新
+                                </button>
+                            </div>
+                        </div>
+                        <div class="panel-body" id="sqlResults">
+                            <div class="empty-state">
+                                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.3">
+                                    <ellipse cx="12" cy="5" rx="9" ry="3"/>
+                                    <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/>
+                                    <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/>
+                                </svg>
+                                <p>SQLを実行すると結果がここに表示されます</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Table Browser -->
+                <div class="panel table-browser">
+                    <div class="panel-header">
+                        <h2>テーブル一覧</h2>
+                    </div>
+                    <div class="panel-body">
+                        <div class="table-list" id="tableList">
+                            <div class="empty-state small">
+                                <p>テーブルがありません</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Markdown Tab -->
+            <div class="tab-content" id="tab-markdown">
+                <div class="split-view">
+                    <div class="panel editor-panel">
+                        <div class="panel-header">
+                            <h2>Markdown エディタ</h2>
+                            <div class="panel-actions">
+                                <button class="btn btn-secondary btn-sm" id="btnMdSample">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                                    サンプル
+                                </button>
+                                <button class="btn btn-primary btn-sm" id="btnRenderMd">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                                    レンダリング
+                                </button>
+                            </div>
+                        </div>
+                        <div class="panel-body">
+                            <div class="editor-wrapper">
+                                <div class="line-numbers" id="mdLineNumbers"></div>
+                                <textarea class="code-editor" id="mdEditor" spellcheck="false" placeholder="# Markdownテーブルを入力&#10;&#10;| カラム1 | カラム2 |&#10;|---------|---------|&#10;| データ  | データ  |"></textarea>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="panel results-panel">
+                        <div class="panel-header">
+                            <h2>プレビュー</h2>
+                        </div>
+                        <div class="panel-body markdown-preview" id="mdPreview">
+                            <div class="empty-state">
+                                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.3">
+                                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                                    <polyline points="14 2 14 8 20 8"/>
+                                </svg>
+                                <p>Markdownを入力してレンダリングしてください</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Mermaid Tab -->
+            <div class="tab-content" id="tab-mermaid">
+                <div class="split-view">
+                    <div class="panel editor-panel">
+                        <div class="panel-header">
+                            <h2>Mermaid エディタ</h2>
+                            <div class="panel-actions">
+                                <button class="btn btn-secondary btn-sm" id="btnMermaidSample">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                                    サンプル
+                                </button>
+                                <button class="btn btn-primary btn-sm" id="btnRenderMermaid">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                                    レンダリング
+                                </button>
+                            </div>
+                        </div>
+                        <div class="panel-body">
+                            <div class="editor-wrapper">
+                                <div class="line-numbers" id="mermaidLineNumbers"></div>
+                                <textarea class="code-editor" id="mermaidEditor" spellcheck="false" placeholder="graph TD&#10;    A[開始] --> B{条件}&#10;    B -->|Yes| C[処理A]&#10;    B -->|No| D[処理B]"></textarea>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="panel results-panel">
+                        <div class="panel-header">
+                            <h2>ダイアグラム</h2>
+                        </div>
+                        <div class="panel-body diagram-preview" id="mermaidPreview">
+                            <div class="empty-state">
+                                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.3">
+                                    <rect x="3" y="3" width="7" height="7" rx="1"/>
+                                    <rect x="14" y="3" width="7" height="7" rx="1"/>
+                                    <rect x="8" y="14" width="7" height="7" rx="1"/>
+                                </svg>
+                                <p>Mermaid記法を入力してレンダリングしてください</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PlantUML Tab -->
+            <div class="tab-content" id="tab-plantuml">
+                <div class="split-view">
+                    <div class="panel editor-panel">
+                        <div class="panel-header">
+                            <h2>PlantUML エディタ</h2>
+                            <div class="panel-actions">
+                                <button class="btn btn-secondary btn-sm" id="btnPlantUMLSample">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                                    サンプル
+                                </button>
+                                <button class="btn btn-primary btn-sm" id="btnRenderPlantUML">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                                    レンダリング
+                                </button>
+                            </div>
+                        </div>
+                        <div class="panel-body">
+                            <div class="editor-wrapper">
+                                <div class="line-numbers" id="plantumlLineNumbers"></div>
+                                <textarea class="code-editor" id="plantumlEditor" spellcheck="false" placeholder="@startuml&#10;Alice -> Bob: Hello&#10;Bob --> Alice: Hi!&#10;@enduml"></textarea>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="panel results-panel">
+                        <div class="panel-header">
+                            <h2>ダイアグラム</h2>
+                        </div>
+                        <div class="panel-body diagram-preview" id="plantumlPreview">
+                            <div class="empty-state">
+                                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.3">
+                                    <circle cx="12" cy="12" r="3"/>
+                                    <path d="M12 1v4M12 19v4"/>
+                                </svg>
+                                <p>PlantUML記法を入力してレンダリングしてください</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Toast Notification -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <script src="static/js/app.js"></script>
+</body>
+</html>
