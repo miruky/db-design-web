@@ -170,6 +170,7 @@ body {
     border: 1px solid var(--glass-border);
     border-radius: var(--radius-xl);
     box-shadow: var(--glass-shadow);
+    position: relative; z-index: 100;
 }
 
 .logo { display: flex; align-items: center; gap: 14px; }
