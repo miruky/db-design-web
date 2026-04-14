@@ -492,36 +492,25 @@ body {
     color: var(--ac-300);
     background: hsla(var(--accent-h), 90%, 66%, 0.14);
     border-bottom: 2px solid hsla(var(--accent-h), 90%, 66%, 0.22);
+    border-right: 1px solid hsla(var(--accent-h), 90%, 66%, 0.12);
     white-space: nowrap;
     position: relative;
 }
-
-.result-table th::after {
-    content: '';
-    position: absolute; right: 0; top: 25%; height: 50%; width: 1px;
-    background: hsla(var(--accent-h), 90%, 66%, 0.12);
-}
-.result-table th:last-child::after { display: none; }
+.result-table th:last-child { border-right: none; }
 
 .result-table td {
     padding: 14px 22px;
     color: var(--cell-text);
     border-bottom: 1px solid hsla(var(--accent-h), 90%, 66%, 0.07);
+    border-right: 1px solid hsla(var(--accent-h), 90%, 66%, 0.07);
     font-family: var(--font-mono);
     font-size: 0.85rem;
     font-weight: 400;
     letter-spacing: 0.01em;
     line-height: 1.55;
     vertical-align: middle;
-    position: relative;
 }
-
-.result-table td::after {
-    content: '';
-    position: absolute; right: 0; top: 20%; height: 60%; width: 1px;
-    background: hsla(var(--accent-h), 90%, 66%, 0.05);
-}
-.result-table td:last-child::after { display: none; }
+.result-table td:last-child { border-right: none; }
 
 .result-table tbody tr { transition: background var(--transition-fast); }
 .result-table tbody tr:hover { background: hsla(var(--accent-h), 90%, 66%, 0.09); }

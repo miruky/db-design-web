@@ -317,7 +317,6 @@ function executeSQL() {
         });
 
         resultsEl.innerHTML = html;
-        bindExpandHandlers(resultsEl);
         showDownloadButton("btnDownloadSql");
         showToast("実行完了", "success");
         refreshTables();
@@ -668,22 +667,48 @@ function stylePlantUMLSvg(svgText) {
     const packageBg = isDark ? `hsla(${h},20%,10%,0.6)` : `hsla(${h},50%,96%,1)`;
     const ac2Stroke = isDark ? `hsl(${(h - 23 + 360) % 360}, 84%, 67%)` : `hsl(${(h - 23 + 360) % 360}, 60%, 50%)`;
 
+    // Dark-theme entity/package colors from the sample that need replacing
+    const darkEntityColors = ['#1a1025', '#1a1026', '#1b1025'];
+    const darkPackageColors = ['#0f0c1e', '#0f0c1f', '#100c1e'];
+    const darkTextColors = ['#e9d5ff', '#c4b5fd', '#a78bfa'];
+    const darkBorderColors = ['#8b5cf6', '#6366f1', '#7c3aed'];
+
     return svgText
         .replace(/<svg /, '<svg style="max-width:100%;height:auto;" ')
-        .replace(/fill="#[A-Fa-f0-9]{6}"/g, (match) => {
-            const c = match.match(/#[A-Fa-f0-9]{6}/)[0].toLowerCase();
+        .replace(/fill="#[A-Fa-f0-9]{3,6}"/g, (match) => {
+            const c = match.match(/#[A-Fa-f0-9]{3,6}/)[0].toLowerCase();
+            // Default PlantUML colors
             if (c === '#fefece' || c === '#ffffcc') return `fill="${entityBg}"`;
             if (c === '#ffffff' || c === '#fbfb77') return `fill="${packageBg}"`;
             if (c === '#000000') return `fill="${textColor}"`;
             if (c === '#a80036') return `fill="${accentFill}"`;
             if (c === '#181818') return `fill="${textMid}"`;
+            // Custom dark-theme colors from sample
+            if (darkEntityColors.includes(c)) return `fill="${entityBg}"`;
+            if (darkPackageColors.includes(c)) return `fill="${packageBg}"`;
+            if (darkTextColors.includes(c)) return `fill="${textColor}"`;
+            if (darkBorderColors.includes(c)) return `fill="${accentFill}"`;
             return match;
         })
-        .replace(/stroke="#[A-Fa-f0-9]{6}"/g, (match) => {
-            const c = match.match(/#[A-Fa-f0-9]{6}/)[0].toLowerCase();
+        .replace(/stroke="#[A-Fa-f0-9]{3,6}"/g, (match) => {
+            const c = match.match(/#[A-Fa-f0-9]{3,6}/)[0].toLowerCase();
             if (c === '#a80036') return `stroke="${accentFill}"`;
             if (c === '#181818') return `stroke="${accentStroke}"`;
             if (c === '#000000') return `stroke="${ac2Stroke}"`;
+            if (darkBorderColors.includes(c)) return `stroke="${accentStroke}"`;
+            return match;
+        })
+        .replace(/fill="#[A-Fa-f0-9]{3,6}"/g, (match) => {
+            // Second pass — aggressive: replace any remaining dark fills in light mode
+            if (!isDark) {
+                const c = match.match(/#[A-Fa-f0-9]{3,6}/)[0].toLowerCase();
+                // If it's a very dark color used as background, lighten it
+                const r = parseInt(c.slice(1,3), 16) || 0;
+                const g = parseInt(c.slice(3,5), 16) || 0;
+                const b = parseInt(c.slice(5,7), 16) || 0;
+                const lum = (r * 299 + g * 587 + b * 114) / 1000;
+                if (lum < 40) return `fill="${entityBg}"`;
+            }
             return match;
         });
 }
@@ -698,21 +723,6 @@ skinparam roundcorner 12
 skinparam shadowing false
 skinparam defaultFontName Inter
 skinparam defaultFontSize 13
-
-skinparam class {
-    BackgroundColor #1a1025
-    BorderColor #8b5cf6
-    FontColor #e9d5ff
-    ArrowColor #7c3aed
-    AttributeFontColor #c4b5fd
-    StereotypeFontColor #a78bfa
-}
-
-skinparam package {
-    BackgroundColor #0f0c1e
-    BorderColor #6366f1
-    FontColor #c4b5fd
-}
 
 package "ユーザー管理" {
     entity "users" as users {
@@ -839,18 +849,6 @@ function showToast(message, type = "success") {
 /* ===========================================
    Result Table Expand (Click to Zoom)
    =========================================== */
-function bindExpandHandlers(container) {
-    container.querySelectorAll(".result-table-wrapper").forEach(wrapper => {
-        wrapper.addEventListener("click", (e) => {
-            if (wrapper.classList.contains("expanded")) {
-                collapseTableWrapper(wrapper);
-            } else {
-                expandTableWrapper(wrapper);
-            }
-        });
-    });
-}
-
 function expandTableWrapper(wrapper) {
     // Create backdrop
     const backdrop = document.createElement("div");
@@ -897,21 +895,33 @@ function initPreviewActions() {
     // Click-to-expand for diagram & markdown previews
     ["mermaidPreview", "plantumlPreview", "mdPreview"].forEach(id => {
         const panel = document.getElementById(id);
+        panel.style.cursor = "default";
         panel.addEventListener("click", (e) => {
             // Don't expand if clicking on empty state or error
             if (e.target.closest(".empty-state") || e.target.closest(".result-error")) return;
-            // Don't expand if there's no rendered content
             if (panel.querySelector(".empty-state")) return;
-            // Don't expand if no actual content (only whitespace/empty)
             const hasContent = panel.querySelector(".mermaid-output, .plantuml-output, table, h1, h2, h3, p, ul, ol, img");
             if (!hasContent) return;
 
+            e.stopPropagation();
             if (panel.classList.contains("preview-expanded")) {
                 collapsePreview(panel);
             } else {
                 expandPreview(panel);
             }
         });
+    });
+
+    // Also handle expand for SQL result tables with the same pattern
+    const sqlResults = document.getElementById("sqlResults");
+    sqlResults.addEventListener("click", (e) => {
+        const wrapper = e.target.closest(".result-table-wrapper");
+        if (!wrapper) return;
+        if (wrapper.classList.contains("expanded")) {
+            collapseTableWrapper(wrapper);
+        } else {
+            expandTableWrapper(wrapper);
+        }
     });
 }
 
@@ -989,11 +999,11 @@ function downloadPreviewAsImage(containerId, filename) {
         return;
     }
 
-    // For SQL results, capture only the table wrappers (exclude badges/meta)
+    // For SQL results, capture only the table element itself (no wrappers/padding)
     let target = container;
-    const tableWrapper = container.querySelector(".result-table-wrapper");
-    if (tableWrapper) {
-        target = tableWrapper;
+    const tableEl = container.querySelector(".result-table");
+    if (tableEl) {
+        target = tableEl;
     }
 
     const isDark = (document.documentElement.getAttribute("data-base") || "dark") === "dark";
@@ -1002,6 +1012,10 @@ function downloadPreviewAsImage(containerId, filename) {
         scale: 2,
         useCORS: true,
         logging: false,
+        x: 0,
+        y: 0,
+        scrollX: 0,
+        scrollY: 0,
     }).then(canvas => {
         canvas.toBlob((blob) => {
             const a = document.createElement("a");
