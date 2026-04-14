@@ -850,19 +850,19 @@ function showToast(message, type = "success") {
    Result Table Expand (Click to Zoom)
    =========================================== */
 function expandTableWrapper(wrapper) {
-    // Create backdrop
     const backdrop = document.createElement("div");
     backdrop.className = "expand-backdrop";
     backdrop.addEventListener("click", () => collapseTableWrapper(wrapper));
     document.body.appendChild(backdrop);
 
-    // Save original parent info for restore
-    wrapper._expandBackdrop = backdrop;
-    wrapper._origPosition = wrapper.style.position;
+    // Move wrapper to body to escape backdrop-filter stacking context
+    wrapper._origParent = wrapper.parentNode;
+    wrapper._origNextSibling = wrapper.nextSibling;
+    document.body.appendChild(wrapper);
 
+    wrapper._expandBackdrop = backdrop;
     wrapper.classList.add("expanded");
 
-    // Esc to close
     const escHandler = (e) => {
         if (e.key === "Escape") { collapseTableWrapper(wrapper); document.removeEventListener("keydown", escHandler); }
     };
@@ -872,6 +872,16 @@ function expandTableWrapper(wrapper) {
 
 function collapseTableWrapper(wrapper) {
     wrapper.classList.remove("expanded");
+    // Move wrapper back to original parent
+    if (wrapper._origParent) {
+        if (wrapper._origNextSibling) {
+            wrapper._origParent.insertBefore(wrapper, wrapper._origNextSibling);
+        } else {
+            wrapper._origParent.appendChild(wrapper);
+        }
+        wrapper._origParent = null;
+        wrapper._origNextSibling = null;
+    }
     if (wrapper._expandBackdrop) {
         wrapper._expandBackdrop.remove();
         wrapper._expandBackdrop = null;
@@ -895,20 +905,12 @@ function initPreviewActions() {
     // Click-to-expand for diagram & markdown previews
     ["mermaidPreview", "plantumlPreview", "mdPreview"].forEach(id => {
         const panel = document.getElementById(id);
-        panel.style.cursor = "default";
         panel.addEventListener("click", (e) => {
-            // Don't expand if clicking on empty state or error
             if (e.target.closest(".empty-state") || e.target.closest(".result-error")) return;
             if (panel.querySelector(".empty-state")) return;
             const hasContent = panel.querySelector(".mermaid-output, .plantuml-output, table, h1, h2, h3, p, ul, ol, img");
             if (!hasContent) return;
-
-            e.stopPropagation();
-            if (panel.classList.contains("preview-expanded")) {
-                collapsePreview(panel);
-            } else {
-                expandPreview(panel);
-            }
+            expandPreview(panel);
         });
     });
 
@@ -999,11 +1001,42 @@ function downloadPreviewAsImage(containerId, filename) {
         return;
     }
 
-    // For SQL results, capture only the table element itself (no wrappers/padding)
+    // For SQL results, capture the full table including scrolled-out parts
     let target = container;
+    const tableWrapper = container.querySelector(".result-table-wrapper");
     const tableEl = container.querySelector(".result-table");
-    if (tableEl) {
+    if (tableEl && tableWrapper) {
+        // Temporarily remove overflow clip so html2canvas sees full table
+        const origOverflow = tableWrapper.style.overflow;
+        const origMaxWidth = tableWrapper.style.maxWidth;
+        tableWrapper.style.overflow = "visible";
+        tableWrapper.style.maxWidth = "none";
         target = tableEl;
+
+        const isDark = (document.documentElement.getAttribute("data-base") || "dark") === "dark";
+        html2canvas(target, {
+            backgroundColor: isDark ? "#0a0814" : "#f8f7fc",
+            scale: 2,
+            useCORS: true,
+            logging: false,
+            windowWidth: tableEl.scrollWidth + 40,
+        }).then(canvas => {
+            tableWrapper.style.overflow = origOverflow;
+            tableWrapper.style.maxWidth = origMaxWidth;
+            canvas.toBlob((blob) => {
+                const a = document.createElement("a");
+                a.href = URL.createObjectURL(blob);
+                a.download = `${filename}-${Date.now()}.png`;
+                a.click();
+                URL.revokeObjectURL(a.href);
+                showToast("画像をダウンロードしました", "success");
+            }, "image/png");
+        }).catch(() => {
+            tableWrapper.style.overflow = origOverflow;
+            tableWrapper.style.maxWidth = origMaxWidth;
+            showToast("画像の生成に失敗しました", "error");
+        });
+        return;
     }
 
     const isDark = (document.documentElement.getAttribute("data-base") || "dark") === "dark";
@@ -1012,10 +1045,6 @@ function downloadPreviewAsImage(containerId, filename) {
         scale: 2,
         useCORS: true,
         logging: false,
-        x: 0,
-        y: 0,
-        scrollX: 0,
-        scrollY: 0,
     }).then(canvas => {
         canvas.toBlob((blob) => {
             const a = document.createElement("a");
@@ -1033,21 +1062,43 @@ function downloadPreviewAsImage(containerId, filename) {
 function expandPreview(panel) {
     const backdrop = document.createElement("div");
     backdrop.className = "expand-backdrop";
-    backdrop.addEventListener("click", () => collapsePreview(panel));
     document.body.appendChild(backdrop);
 
+    // Clone content into an overlay to escape backdrop-filter stacking context
+    const overlay = document.createElement("div");
+    overlay.className = "preview-expanded-overlay";
+    overlay.innerHTML = panel.innerHTML;
+    document.body.appendChild(overlay);
+
     panel._expandBackdrop = backdrop;
-    panel.classList.add("preview-expanded");
+    panel._expandOverlay = overlay;
+
+    const closeExpand = () => {
+        overlay.remove();
+        backdrop.remove();
+        panel._expandBackdrop = null;
+        panel._expandOverlay = null;
+        if (panel._escHandler) {
+            document.removeEventListener("keydown", panel._escHandler);
+            panel._escHandler = null;
+        }
+    };
+
+    backdrop.addEventListener("click", closeExpand);
+    overlay.addEventListener("click", closeExpand);
 
     const escHandler = (e) => {
-        if (e.key === "Escape") { collapsePreview(panel); document.removeEventListener("keydown", escHandler); }
+        if (e.key === "Escape") closeExpand();
     };
     panel._escHandler = escHandler;
     document.addEventListener("keydown", escHandler);
 }
 
 function collapsePreview(panel) {
-    panel.classList.remove("preview-expanded");
+    if (panel._expandOverlay) {
+        panel._expandOverlay.remove();
+        panel._expandOverlay = null;
+    }
     if (panel._expandBackdrop) {
         panel._expandBackdrop.remove();
         panel._expandBackdrop = null;
