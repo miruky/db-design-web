@@ -72,6 +72,10 @@
 
 /* ---------- Light Base Theme ---------- */
 [data-base="light"] {
+    /* Invert accent tints for legibility on light bg */
+    --ac-200: hsl(var(--accent-h), 60%, 32%);
+    --ac-300: hsl(var(--accent-h), 55%, 40%);
+
     --bg-deep: hsl(var(--accent-h), 30%, 97%);
     --bg-dark: hsl(var(--accent-h), 25%, 94%);
     --editor-bg: hsla(var(--accent-h), 20%, 94%, 0.75);
@@ -485,7 +489,7 @@ body {
     font-size: 0.80rem;
     text-transform: uppercase;
     letter-spacing: 0.08em;
-    color: var(--ac-200);
+    color: var(--ac-300);
     background: hsla(var(--accent-h), 90%, 66%, 0.14);
     border-bottom: 2px solid hsla(var(--accent-h), 90%, 66%, 0.22);
     white-space: nowrap;

@@ -896,12 +896,15 @@ function initPreviewActions() {
 
     // Click-to-expand for diagram & markdown previews
     ["mermaidPreview", "plantumlPreview", "mdPreview"].forEach(id => {
-        document.getElementById(id).addEventListener("click", (e) => {
-            const panel = document.getElementById(id);
-            // Don't expand if clicking on empty state
+        const panel = document.getElementById(id);
+        panel.addEventListener("click", (e) => {
+            // Don't expand if clicking on empty state or error
             if (e.target.closest(".empty-state") || e.target.closest(".result-error")) return;
-            // Don't expand if there's no content
+            // Don't expand if there's no rendered content
             if (panel.querySelector(".empty-state")) return;
+            // Don't expand if no actual content (only whitespace/empty)
+            const hasContent = panel.querySelector(".mermaid-output, .plantuml-output, table, h1, h2, h3, p, ul, ol, img");
+            if (!hasContent) return;
 
             if (panel.classList.contains("preview-expanded")) {
                 collapsePreview(panel);
@@ -986,8 +989,15 @@ function downloadPreviewAsImage(containerId, filename) {
         return;
     }
 
+    // For SQL results, capture only the table wrappers (exclude badges/meta)
+    let target = container;
+    const tableWrapper = container.querySelector(".result-table-wrapper");
+    if (tableWrapper) {
+        target = tableWrapper;
+    }
+
     const isDark = (document.documentElement.getAttribute("data-base") || "dark") === "dark";
-    html2canvas(container, {
+    html2canvas(target, {
         backgroundColor: isDark ? "#0a0814" : "#f8f7fc",
         scale: 2,
         useCORS: true,
