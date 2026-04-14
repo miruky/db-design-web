@@ -1067,6 +1067,10 @@ function expandPreview(panel) {
     // Clone content into an overlay to escape backdrop-filter stacking context
     const overlay = document.createElement("div");
     overlay.className = "preview-expanded-overlay";
+    // Copy classes from panel so CSS selectors like .markdown-preview still work
+    panel.classList.forEach(cls => {
+        if (cls !== "panel-body") overlay.classList.add(cls);
+    });
     overlay.innerHTML = panel.innerHTML;
     document.body.appendChild(overlay);
 

@@ -774,13 +774,15 @@ body {
 .diagram-preview .plantuml-output img { max-width: 100%; height: auto; border-radius: var(--radius-sm); }
 
 .plantuml-output svg text { fill: var(--ac-200) !important; font-family: 'Inter', sans-serif !important; }
-.plantuml-output svg line, .plantuml-output svg path { stroke: var(--ac-500) !important; }
-.plantuml-output svg rect { fill: hsla(var(--accent-h), 90%, 66%, 0.12) !important; stroke: var(--ac-700) !important; }
+.plantuml-output svg line, .plantuml-output svg path { stroke: var(--ac-500) !important; stroke-width: 2px !important; }
+.plantuml-output svg rect { fill: hsla(var(--accent-h), 90%, 66%, 0.12) !important; stroke: var(--ac-500) !important; stroke-width: 1.5px !important; }
 .plantuml-output svg polygon { fill: hsla(var(--accent-h2), 84%, 67%, 0.15) !important; stroke: var(--ac2-500) !important; }
+.plantuml-output svg ellipse, .plantuml-output svg circle { fill: var(--ac-500) !important; stroke: var(--ac-500) !important; }
 
 [data-base="light"] .plantuml-output svg text { fill: var(--ac-800) !important; }
 [data-base="light"] .plantuml-output svg rect { fill: hsla(var(--accent-h), 60%, 92%, 1) !important; stroke: var(--ac-500) !important; }
 [data-base="light"] .plantuml-output svg polygon { fill: hsla(var(--accent-h2), 50%, 90%, 1) !important; stroke: var(--ac2-500) !important; }
+[data-base="light"] .plantuml-output svg ellipse, [data-base="light"] .plantuml-output svg circle { fill: var(--ac-500) !important; stroke: var(--ac-500) !important; }
 
 /* ---------- Toast Notifications ---------- */
 .toast-container {
@@ -820,12 +822,16 @@ body {
 /* ---------- Mermaid SVG Theme ---------- */
 .mermaid-output svg .node rect, .mermaid-output svg .node polygon, .mermaid-output svg .node circle { stroke: var(--ac-500) !important; stroke-width: 1.5px !important; }
 .mermaid-output svg .edgeLabel { background-color: var(--glass-bg) !important; }
-.mermaid-output svg .edgePath .path { stroke: var(--ac-700) !important; stroke-width: 1.5px !important; }
-.mermaid-output svg marker path { fill: var(--ac-700) !important; }
-.mermaid-output svg .entityBox { fill: hsla(var(--accent-h), 90%, 66%, 0.10) !important; stroke: var(--ac-500) !important; }
+.mermaid-output svg .edgePath .path { stroke: var(--ac-500) !important; stroke-width: 2.5px !important; }
+.mermaid-output svg marker path { fill: var(--ac-500) !important; }
+.mermaid-output svg .entityBox { fill: hsla(var(--accent-h), 90%, 66%, 0.10) !important; stroke: var(--ac-500) !important; stroke-width: 1.5px !important; }
 .mermaid-output svg .entityLabel { fill: var(--ac-200) !important; }
 .mermaid-output svg .relationshipLabelBox { fill: var(--glass-bg) !important; }
-.mermaid-output svg .relationshipLine { stroke: var(--ac-700) !important; }
+.mermaid-output svg .relationshipLine { stroke: var(--ac-500) !important; stroke-width: 2.5px !important; }
+.mermaid-output svg .attributeBoxEven, .mermaid-output svg .attributeBoxOdd { stroke: var(--ac-500) !important; stroke-width: 0.8px !important; fill: hsla(var(--accent-h), 90%, 66%, 0.05) !important; }
+.mermaid-output svg .er.relationshipLine { stroke: var(--ac-500) !important; stroke-width: 2.5px !important; }
+.mermaid-output svg circle.relationshipEnd { fill: var(--ac-500) !important; stroke: var(--ac-500) !important; }
+.mermaid-output svg .entityTitleBox { fill: hsla(var(--accent-h), 90%, 66%, 0.18) !important; }
 
 [data-base="light"] .mermaid-output svg .entityBox { fill: hsla(var(--accent-h), 60%, 92%, 1) !important; }
 [data-base="light"] .mermaid-output svg .entityLabel { fill: var(--ac-800) !important; }
@@ -834,6 +840,8 @@ body {
 [data-base="light"] .mermaid-output svg .node circle { fill: hsla(var(--accent-h), 60%, 94%, 1) !important; }
 [data-base="light"] .mermaid-output svg .edgeLabel { background-color: rgba(255,255,255,0.9) !important; }
 [data-base="light"] .mermaid-output svg .relationshipLabelBox { fill: rgba(255,255,255,0.9) !important; }
+[data-base="light"] .mermaid-output svg .attributeBoxEven, [data-base="light"] .mermaid-output svg .attributeBoxOdd { fill: hsla(var(--accent-h), 50%, 96%, 1) !important; }
+[data-base="light"] .mermaid-output svg .entityTitleBox { fill: hsla(var(--accent-h), 60%, 88%, 1) !important; }
 
 /* ---------- Responsive ---------- */
 @media (max-width: 1024px) { .split-view { grid-template-columns: 1fr; } }
