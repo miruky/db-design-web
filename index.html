@@ -17,6 +17,8 @@
     <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
     <!-- Marked.js for Markdown -->
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <!-- html2canvas for screenshot download -->
+    <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 </head>
 <body>
     <!-- Animated Background -->
@@ -151,6 +153,10 @@
                         <div class="panel-header">
                             <h2>実行結果</h2>
                             <div class="panel-actions">
+                                <button class="btn btn-ghost btn-sm btn-download hidden" id="btnDownloadSql" title="画像としてダウンロード">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                                    DL
+                                </button>
                                 <button class="btn btn-ghost btn-sm" id="btnRefreshTables">
                                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
                                     更新
@@ -212,6 +218,12 @@
                     <div class="panel results-panel">
                         <div class="panel-header">
                             <h2>プレビュー</h2>
+                            <div class="panel-actions">
+                                <button class="btn btn-ghost btn-sm btn-download hidden" id="btnDownloadMd" title="画像としてダウンロード">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                                    DL
+                                </button>
+                            </div>
                         </div>
                         <div class="panel-body markdown-preview" id="mdPreview">
                             <div class="empty-state">
@@ -253,6 +265,12 @@
                     <div class="panel results-panel">
                         <div class="panel-header">
                             <h2>ダイアグラム</h2>
+                            <div class="panel-actions">
+                                <button class="btn btn-ghost btn-sm btn-download hidden" id="btnDownloadMermaid" title="画像としてダウンロード">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                                    DL
+                                </button>
+                            </div>
                         </div>
                         <div class="panel-body diagram-preview" id="mermaidPreview">
                             <div class="empty-state">
@@ -295,6 +313,12 @@
                     <div class="panel results-panel">
                         <div class="panel-header">
                             <h2>ダイアグラム</h2>
+                            <div class="panel-actions">
+                                <button class="btn btn-ghost btn-sm btn-download hidden" id="btnDownloadPlantUML" title="画像としてダウンロード">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                                    DL
+                                </button>
+                            </div>
                         </div>
                         <div class="panel-body diagram-preview" id="plantumlPreview">
                             <div class="empty-state">

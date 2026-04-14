@@ -579,6 +579,37 @@ body {
 }
 @keyframes expandIn { from{opacity:0;transform:translate(-50%,-50%) scale(0.92)} to{opacity:1;transform:translate(-50%,-50%) scale(1)} }
 
+/* ---------- Preview Expand (Diagrams & Markdown) ---------- */
+.panel-body.preview-expanded {
+    position: fixed;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 9991;
+    max-width: 95vw;
+    max-height: 90vh;
+    width: auto;
+    min-width: 50vw;
+    overflow: auto;
+    border-radius: var(--radius-lg);
+    border: 1px solid hsla(var(--accent-h), 90%, 66%, 0.25);
+    box-shadow: 0 24px 80px rgba(0, 0, 0, 0.5);
+    cursor: zoom-out;
+    animation: expandIn 0.3s ease;
+    background: #0a0814;
+    padding: 32px;
+}
+[data-base="light"] .panel-body.preview-expanded {
+    background: #faf9ff;
+    box-shadow: 0 24px 80px rgba(0, 0, 0, 0.15);
+}
+.panel-body:not(.preview-expanded).diagram-preview,
+.panel-body:not(.preview-expanded).markdown-preview {
+    cursor: zoom-in;
+}
+
+/* ---------- Download Button ---------- */
+.btn-download.hidden { display: none; }
+
 /* ---------- Table Browser ---------- */
 .table-list {
     display: grid;
@@ -747,6 +778,10 @@ body {
 .plantuml-output svg rect { fill: hsla(var(--accent-h), 90%, 66%, 0.12) !important; stroke: var(--ac-700) !important; }
 .plantuml-output svg polygon { fill: hsla(var(--accent-h2), 84%, 67%, 0.15) !important; stroke: var(--ac2-500) !important; }
 
+[data-base="light"] .plantuml-output svg text { fill: var(--ac-800) !important; }
+[data-base="light"] .plantuml-output svg rect { fill: hsla(var(--accent-h), 60%, 92%, 1) !important; stroke: var(--ac-500) !important; }
+[data-base="light"] .plantuml-output svg polygon { fill: hsla(var(--accent-h2), 50%, 90%, 1) !important; stroke: var(--ac2-500) !important; }
+
 /* ---------- Toast Notifications ---------- */
 .toast-container {
     position: fixed; top: 24px; right: 24px; z-index: 10000;
@@ -791,6 +826,14 @@ body {
 .mermaid-output svg .entityLabel { fill: var(--ac-200) !important; }
 .mermaid-output svg .relationshipLabelBox { fill: var(--glass-bg) !important; }
 .mermaid-output svg .relationshipLine { stroke: var(--ac-700) !important; }
+
+[data-base="light"] .mermaid-output svg .entityBox { fill: hsla(var(--accent-h), 60%, 92%, 1) !important; }
+[data-base="light"] .mermaid-output svg .entityLabel { fill: var(--ac-800) !important; }
+[data-base="light"] .mermaid-output svg .node rect,
+[data-base="light"] .mermaid-output svg .node polygon,
+[data-base="light"] .mermaid-output svg .node circle { fill: hsla(var(--accent-h), 60%, 94%, 1) !important; }
+[data-base="light"] .mermaid-output svg .edgeLabel { background-color: rgba(255,255,255,0.9) !important; }
+[data-base="light"] .mermaid-output svg .relationshipLabelBox { fill: rgba(255,255,255,0.9) !important; }
 
 /* ---------- Responsive ---------- */
 @media (max-width: 1024px) { .split-view { grid-template-columns: 1fr; } }

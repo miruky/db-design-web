@@ -14,6 +14,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     initMarkdown();
     initMermaid();
     initPlantUML();
+    initPreviewActions();
 });
 
 /* ===========================================
@@ -109,45 +110,49 @@ function applyTheme(base, accentH, save) {
 }
 
 function initMermaidTheme(h, base) {
-    const textLight = `hsl(${h}, 100%, 92%)`;
-    const textMid = `hsl(${h}, 97%, 85%)`;
-    const accent = `hsl(${h}, 90%, 66%)`;
-    const accentDark = `hsl(${h}, 80%, 55%)`;
-    const accentBg = `hsla(${h}, 90%, 66%, 0.15)`;
-    const accentBgFaint = `hsla(${h}, 84%, 67%, 0.08)`;
-    const labelBg = base === "dark" ? "rgba(15, 12, 30, 0.8)" : "rgba(255, 255, 255, 0.85)";
+    const isDark = base === "dark";
+    const textPrimary = isDark ? `hsl(${h}, 100%, 92%)` : `hsl(${h}, 50%, 20%)`;
+    const textSecondary = isDark ? `hsl(${h}, 97%, 85%)` : `hsl(${h}, 45%, 30%)`;
+    const textTertiary = isDark ? `hsl(${h}, 95%, 75%)` : `hsl(${h}, 40%, 40%)`;
+    const accent = isDark ? `hsl(${h}, 90%, 66%)` : `hsl(${h}, 70%, 50%)`;
+    const accentDark = isDark ? `hsl(${h}, 80%, 55%)` : `hsl(${h}, 65%, 42%)`;
+    const accentBg = isDark ? `hsla(${h}, 90%, 66%, 0.15)` : `hsla(${h}, 70%, 50%, 0.10)`;
+    const accentBgFaint = isDark ? `hsla(${h}, 84%, 67%, 0.08)` : `hsla(${h}, 60%, 50%, 0.06)`;
+    const entityBg = isDark ? `hsla(${h}, 90%, 66%, 0.12)` : `hsla(${h}, 60%, 92%, 1)`;
+    const labelBg = isDark ? "rgba(15, 12, 30, 0.8)" : "rgba(255, 255, 255, 0.92)";
+    const bgColor = isDark ? "transparent" : "transparent";
 
     mermaid.initialize({
         startOnLoad: false,
-        theme: base === "dark" ? "dark" : "default",
+        theme: isDark ? "dark" : "default",
         themeVariables: {
-            mainBkg: accentBg,
+            mainBkg: entityBg,
             nodeBorder: accent,
             clusterBkg: accentBgFaint,
             clusterBorder: `hsla(${h}, 90%, 66%, 0.3)`,
-            primaryTextColor: textLight,
-            secondaryTextColor: textMid,
-            tertiaryTextColor: `hsl(${h}, 95%, 75%)`,
+            primaryTextColor: textPrimary,
+            secondaryTextColor: textSecondary,
+            tertiaryTextColor: textTertiary,
             lineColor: accentDark,
             entityBorder: accent,
-            entityBkg: `hsla(${h}, 90%, 66%, 0.12)`,
+            entityBkg: entityBg,
             edgeLabelBackground: labelBg,
-            classText: textLight,
-            actorBkg: `hsla(${h}, 90%, 66%, 0.20)`,
+            classText: textPrimary,
+            actorBkg: isDark ? `hsla(${h}, 90%, 66%, 0.20)` : `hsla(${h}, 60%, 50%, 0.12)`,
             actorBorder: accent,
-            actorTextColor: textLight,
-            signalColor: textMid,
-            signalTextColor: textLight,
-            noteBkgColor: accentBgFaint,
-            noteBorderColor: `hsl(${(h - 23 + 360) % 360}, 84%, 67%)`,
-            noteTextColor: textLight,
-            activationBkgColor: `hsla(${h}, 90%, 66%, 0.20)`,
+            actorTextColor: textPrimary,
+            signalColor: textSecondary,
+            signalTextColor: textPrimary,
+            noteBkgColor: isDark ? accentBgFaint : `hsla(${h}, 50%, 50%, 0.08)`,
+            noteBorderColor: `hsl(${(h - 23 + 360) % 360}, 84%, ${isDark ? 67 : 50}%)`,
+            noteTextColor: textPrimary,
+            activationBkgColor: isDark ? `hsla(${h}, 90%, 66%, 0.20)` : `hsla(${h}, 60%, 50%, 0.12)`,
             activationBorderColor: accent,
             labelBoxBkgColor: labelBg,
             labelBoxBorderColor: accentDark,
-            labelTextColor: textLight,
-            loopTextColor: textMid,
-            background: "transparent",
+            labelTextColor: textPrimary,
+            loopTextColor: textSecondary,
+            background: bgColor,
         },
         fontFamily: "'Inter', sans-serif",
         fontSize: 14,
@@ -313,6 +318,7 @@ function executeSQL() {
 
         resultsEl.innerHTML = html;
         bindExpandHandlers(resultsEl);
+        showDownloadButton("btnDownloadSql");
         showToast("実行完了", "success");
         refreshTables();
     } catch (err) {
@@ -468,6 +474,7 @@ function renderMarkdown() {
     if (!md) { showToast("Markdownを入力してください", "error"); return; }
     try {
         preview.innerHTML = marked.parse(md);
+        showDownloadButton("btnDownloadMd");
         showToast("レンダリング完了", "success");
     } catch (err) {
         preview.innerHTML = `<div class="result-error">パースエラー: ${escapeHtml(err.message)}</div>`;
@@ -559,6 +566,7 @@ async function renderMermaid() {
             svgEl.style.maxWidth = "100%";
             svgEl.style.height = "auto";
         }
+        showDownloadButton("btnDownloadMermaid");
         showToast("Mermaid図をレンダリングしました", "success");
     } catch (err) {
         preview.innerHTML = `<div class="result-error" style="margin:20px">構文エラー: ${escapeHtml(err.message || "不正なMermaid記法です")}</div>`;
@@ -629,10 +637,12 @@ function renderPlantUML() {
                 .then(res => res.text())
                 .then(svgText => {
                     preview.innerHTML = `<div class="plantuml-output">${stylePlantUMLSvg(svgText)}</div>`;
+                    showDownloadButton("btnDownloadPlantUML");
                     showToast("PlantUML図をレンダリングしました", "success");
                 })
                 .catch(() => {
                     preview.innerHTML = `<div class="plantuml-output"><img src="${url}" alt="PlantUML Diagram" /></div>`;
+                    showDownloadButton("btnDownloadPlantUML");
                     showToast("PlantUML図をレンダリングしました", "success");
                 });
         };
@@ -648,28 +658,32 @@ function renderPlantUML() {
 
 function stylePlantUMLSvg(svgText) {
     const h = parseInt(getComputedStyle(document.documentElement).getPropertyValue("--accent-h")) || 263;
-    const ac500 = `hsl(${h}, 90%, 66%)`;
-    const ac700 = `hsl(${h}, 80%, 55%)`;
-    const ac200 = `hsl(${h}, 100%, 92%)`;
-    const ac300 = `hsl(${h}, 97%, 85%)`;
-    const ac2500 = `hsl(${(h - 23 + 360) % 360}, 84%, 67%)`;
+    const isDark = (document.documentElement.getAttribute("data-base") || "dark") === "dark";
+
+    const accentFill = isDark ? `hsl(${h}, 90%, 66%)` : `hsl(${h}, 70%, 50%)`;
+    const accentStroke = isDark ? `hsl(${h}, 80%, 55%)` : `hsl(${h}, 65%, 42%)`;
+    const textColor = isDark ? `hsl(${h}, 100%, 92%)` : `hsl(${h}, 50%, 20%)`;
+    const textMid = isDark ? `hsl(${h}, 97%, 85%)` : `hsl(${h}, 45%, 30%)`;
+    const entityBg = isDark ? `hsla(${h},90%,66%,0.12)` : `hsla(${h},60%,92%,1)`;
+    const packageBg = isDark ? `hsla(${h},20%,10%,0.6)` : `hsla(${h},50%,96%,1)`;
+    const ac2Stroke = isDark ? `hsl(${(h - 23 + 360) % 360}, 84%, 67%)` : `hsl(${(h - 23 + 360) % 360}, 60%, 50%)`;
 
     return svgText
         .replace(/<svg /, '<svg style="max-width:100%;height:auto;" ')
         .replace(/fill="#[A-Fa-f0-9]{6}"/g, (match) => {
             const c = match.match(/#[A-Fa-f0-9]{6}/)[0].toLowerCase();
-            if (c === '#fefece' || c === '#ffffcc') return `fill="hsla(${h},90%,66%,0.12)"`;
-            if (c === '#ffffff' || c === '#fbfb77') return `fill="hsla(${h},20%,10%,0.6)"`;
-            if (c === '#000000') return `fill="${ac200}"`;
-            if (c === '#a80036') return `fill="${ac500}"`;
-            if (c === '#181818') return `fill="${ac300}"`;
+            if (c === '#fefece' || c === '#ffffcc') return `fill="${entityBg}"`;
+            if (c === '#ffffff' || c === '#fbfb77') return `fill="${packageBg}"`;
+            if (c === '#000000') return `fill="${textColor}"`;
+            if (c === '#a80036') return `fill="${accentFill}"`;
+            if (c === '#181818') return `fill="${textMid}"`;
             return match;
         })
         .replace(/stroke="#[A-Fa-f0-9]{6}"/g, (match) => {
             const c = match.match(/#[A-Fa-f0-9]{6}/)[0].toLowerCase();
-            if (c === '#a80036') return `stroke="${ac500}"`;
-            if (c === '#181818') return `stroke="${ac700}"`;
-            if (c === '#000000') return `stroke="${ac2500}"`;
+            if (c === '#a80036') return `stroke="${accentFill}"`;
+            if (c === '#181818') return `stroke="${accentStroke}"`;
+            if (c === '#000000') return `stroke="${ac2Stroke}"`;
             return match;
         });
 }
@@ -867,5 +881,155 @@ function collapseTableWrapper(wrapper) {
     if (wrapper._escHandler) {
         document.removeEventListener("keydown", wrapper._escHandler);
         wrapper._escHandler = null;
+    }
+}
+
+/* ===========================================
+   Preview Download & Expand
+   =========================================== */
+function initPreviewActions() {
+    // Download buttons
+    document.getElementById("btnDownloadSql").addEventListener("click", () => downloadPreviewAsImage("sqlResults", "sql-result"));
+    document.getElementById("btnDownloadMd").addEventListener("click", () => downloadPreviewAsImage("mdPreview", "markdown-preview"));
+    document.getElementById("btnDownloadMermaid").addEventListener("click", () => downloadSvgAsImage("mermaidPreview", "mermaid-diagram"));
+    document.getElementById("btnDownloadPlantUML").addEventListener("click", () => downloadSvgAsImage("plantumlPreview", "plantuml-diagram"));
+
+    // Click-to-expand for diagram & markdown previews
+    ["mermaidPreview", "plantumlPreview", "mdPreview"].forEach(id => {
+        document.getElementById(id).addEventListener("click", (e) => {
+            const panel = document.getElementById(id);
+            // Don't expand if clicking on empty state
+            if (e.target.closest(".empty-state") || e.target.closest(".result-error")) return;
+            // Don't expand if there's no content
+            if (panel.querySelector(".empty-state")) return;
+
+            if (panel.classList.contains("preview-expanded")) {
+                collapsePreview(panel);
+            } else {
+                expandPreview(panel);
+            }
+        });
+    });
+}
+
+function showDownloadButton(btnId) {
+    const btn = document.getElementById(btnId);
+    if (btn) btn.classList.remove("hidden");
+}
+
+function downloadSvgAsImage(containerId, filename) {
+    const container = document.getElementById(containerId);
+    const svgEl = container.querySelector("svg");
+    if (!svgEl) { showToast("ダウンロードする図がありません", "error"); return; }
+
+    const clone = svgEl.cloneNode(true);
+    // Inline computed styles for faithful rendering
+    inlineSvgStyles(svgEl, clone);
+
+    const svgData = new XMLSerializer().serializeToString(clone);
+    const svgBlob = new Blob([svgData], { type: "image/svg+xml;charset=utf-8" });
+    const url = URL.createObjectURL(svgBlob);
+
+    const img = new Image();
+    img.onload = () => {
+        const scale = 2;
+        const canvas = document.createElement("canvas");
+        canvas.width = img.naturalWidth * scale;
+        canvas.height = img.naturalHeight * scale;
+        const ctx = canvas.getContext("2d");
+
+        // Draw background matching the current theme
+        const isDark = (document.documentElement.getAttribute("data-base") || "dark") === "dark";
+        ctx.fillStyle = isDark ? "#0a0814" : "#f8f7fc";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        ctx.scale(scale, scale);
+        ctx.drawImage(img, 0, 0);
+        URL.revokeObjectURL(url);
+
+        canvas.toBlob((blob) => {
+            const a = document.createElement("a");
+            a.href = URL.createObjectURL(blob);
+            a.download = `${filename}-${Date.now()}.png`;
+            a.click();
+            URL.revokeObjectURL(a.href);
+            showToast("画像をダウンロードしました", "success");
+        }, "image/png");
+    };
+    img.onerror = () => {
+        URL.revokeObjectURL(url);
+        showToast("画像の生成に失敗しました", "error");
+    };
+    img.src = url;
+}
+
+function inlineSvgStyles(source, target) {
+    const sourceChildren = source.children;
+    const targetChildren = target.children;
+    for (let i = 0; i < sourceChildren.length; i++) {
+        if (targetChildren[i]) {
+            const computed = window.getComputedStyle(sourceChildren[i]);
+            const important = ["fill", "stroke", "stroke-width", "font-family", "font-size", "font-weight", "color", "opacity", "visibility"];
+            important.forEach(prop => {
+                const val = computed.getPropertyValue(prop);
+                if (val) targetChildren[i].style.setProperty(prop, val);
+            });
+            inlineSvgStyles(sourceChildren[i], targetChildren[i]);
+        }
+    }
+}
+
+function downloadPreviewAsImage(containerId, filename) {
+    const container = document.getElementById(containerId);
+    if (!container || container.querySelector(".empty-state")) {
+        showToast("ダウンロードするコンテンツがありません", "error");
+        return;
+    }
+
+    const isDark = (document.documentElement.getAttribute("data-base") || "dark") === "dark";
+    html2canvas(container, {
+        backgroundColor: isDark ? "#0a0814" : "#f8f7fc",
+        scale: 2,
+        useCORS: true,
+        logging: false,
+    }).then(canvas => {
+        canvas.toBlob((blob) => {
+            const a = document.createElement("a");
+            a.href = URL.createObjectURL(blob);
+            a.download = `${filename}-${Date.now()}.png`;
+            a.click();
+            URL.revokeObjectURL(a.href);
+            showToast("画像をダウンロードしました", "success");
+        }, "image/png");
+    }).catch(() => {
+        showToast("画像の生成に失敗しました", "error");
+    });
+}
+
+function expandPreview(panel) {
+    const backdrop = document.createElement("div");
+    backdrop.className = "expand-backdrop";
+    backdrop.addEventListener("click", () => collapsePreview(panel));
+    document.body.appendChild(backdrop);
+
+    panel._expandBackdrop = backdrop;
+    panel.classList.add("preview-expanded");
+
+    const escHandler = (e) => {
+        if (e.key === "Escape") { collapsePreview(panel); document.removeEventListener("keydown", escHandler); }
+    };
+    panel._escHandler = escHandler;
+    document.addEventListener("keydown", escHandler);
+}
+
+function collapsePreview(panel) {
+    panel.classList.remove("preview-expanded");
+    if (panel._expandBackdrop) {
+        panel._expandBackdrop.remove();
+        panel._expandBackdrop = null;
+    }
+    if (panel._escHandler) {
+        document.removeEventListener("keydown", panel._escHandler);
+        panel._escHandler = null;
     }
 }
