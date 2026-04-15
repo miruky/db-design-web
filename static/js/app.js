@@ -21,28 +21,47 @@ document.addEventListener("DOMContentLoaded", async () => {
    Theme System (Base + Accent Color)
    =========================================== */
 const ACCENT_COLORS = [
-    { name: "Purple",  h: 263, color: "#a855f7" },
-    { name: "Violet",  h: 250, color: "#8b5cf6" },
-    { name: "Indigo",  h: 234, color: "#6366f1" },
-    { name: "Blue",    h: 217, color: "#3b82f6" },
-    { name: "Cyan",    h: 188, color: "#06b6d4" },
-    { name: "Teal",    h: 168, color: "#14b8a6" },
-    { name: "Green",   h: 142, color: "#22c55e" },
-    { name: "Lime",    h: 84,  color: "#84cc16" },
-    { name: "Yellow",  h: 48,  color: "#eab308" },
-    { name: "Amber",   h: 38,  color: "#f59e0b" },
-    { name: "Orange",  h: 25,  color: "#f97316" },
-    { name: "Red",     h: 0,   color: "#ef4444" },
-    { name: "Rose",    h: 347, color: "#f43f5e" },
-    { name: "Pink",    h: 330, color: "#ec4899" },
+    // Row 1 — Cool spectrum
+    { name: "Lavender",   h: 270, color: "#b47aff" },
+    { name: "Purple",     h: 263, color: "#a855f7" },
+    { name: "Violet",     h: 250, color: "#8b5cf6" },
+    { name: "Indigo",     h: 234, color: "#6366f1" },
+    { name: "Cobalt",     h: 225, color: "#4f6df5" },
+    { name: "Blue",       h: 217, color: "#3b82f6" },
+    { name: "Dodger",     h: 207, color: "#2196f3" },
+    // Row 2 — Cool-warm bridge
+    { name: "Sky",        h: 199, color: "#0ea5e9" },
+    { name: "Cyan",       h: 188, color: "#06b6d4" },
+    { name: "Teal",       h: 168, color: "#14b8a6" },
+    { name: "Emerald",    h: 155, color: "#10b981" },
+    { name: "Green",      h: 142, color: "#22c55e" },
+    { name: "Lime",       h: 84,  color: "#84cc16" },
+    { name: "Chartreuse", h: 68,  color: "#a3e635" },
+    // Row 3 — Warm spectrum
+    { name: "Yellow",     h: 48,  color: "#eab308" },
+    { name: "Amber",      h: 38,  color: "#f59e0b" },
+    { name: "Orange",     h: 25,  color: "#f97316" },
+    { name: "Tangerine",  h: 16,  color: "#fb7040" },
+    { name: "Red",        h: 0,   color: "#ef4444" },
+    { name: "Crimson",    h: 355, color: "#e11d48" },
+    { name: "Rose",       h: 347, color: "#f43f5e" },
+    // Row 4 — Pink-purple bridge
+    { name: "Pink",       h: 330, color: "#ec4899" },
+    { name: "Magenta",    h: 315, color: "#d946ef" },
+    { name: "Fuchsia",    h: 300, color: "#c026d3" },
+    { name: "Plum",       h: 290, color: "#a855c7" },
+    { name: "Grape",      h: 280, color: "#9333ea" },
+    { name: "Slate",      h: 215, color: "#64748b" },
+    { name: "Zinc",       h: 240, color: "#71717a" },
 ];
 
 function initThemePicker() {
     const saved = JSON.parse(localStorage.getItem("dbds-theme") || "{}");
     const base = saved.base || "dark";
     const accentH = saved.accentH ?? 263;
+    const intensity = saved.intensity ?? 100;
 
-    applyTheme(base, accentH, false);
+    applyTheme(base, accentH, intensity, false);
 
     // Render accent swatches
     const swatchContainer = document.getElementById("accentSwatches");
@@ -55,9 +74,23 @@ function initThemePicker() {
         el.addEventListener("click", () => {
             swatchContainer.querySelectorAll(".accent-swatch").forEach(s => s.classList.remove("active"));
             el.classList.add("active");
-            applyTheme(document.documentElement.getAttribute("data-base") || "dark", h, true);
+            const curIntensity = parseInt(document.getElementById("intensitySlider").value) || 100;
+            applyTheme(document.documentElement.getAttribute("data-base") || "dark", h, curIntensity, true);
         });
         swatchContainer.appendChild(el);
+    });
+
+    // Intensity slider
+    const slider = document.getElementById("intensitySlider");
+    const valueLabel = document.getElementById("intensityValue");
+    slider.value = intensity;
+    valueLabel.textContent = intensity + "%";
+    slider.addEventListener("input", () => {
+        const val = parseInt(slider.value);
+        valueLabel.textContent = val + "%";
+        const currentH = parseInt(getComputedStyle(document.documentElement).getPropertyValue("--accent-h")) || 263;
+        const currentBase = document.documentElement.getAttribute("data-base") || "dark";
+        applyTheme(currentBase, currentH, val, true);
     });
 
     // Base toggle
@@ -68,7 +101,8 @@ function initThemePicker() {
             document.querySelectorAll(".base-toggle-btn").forEach(b => b.classList.remove("active"));
             btn.classList.add("active");
             const currentH = parseInt(getComputedStyle(document.documentElement).getPropertyValue("--accent-h")) || 263;
-            applyTheme(btn.dataset.base, currentH, true);
+            const curIntensity = parseInt(document.getElementById("intensitySlider").value) || 100;
+            applyTheme(btn.dataset.base, currentH, curIntensity, true);
         });
     });
 
@@ -84,41 +118,45 @@ function initThemePicker() {
     });
 }
 
-function applyTheme(base, accentH, save) {
+function applyTheme(base, accentH, intensity, save) {
     document.documentElement.setAttribute("data-base", base);
     document.documentElement.style.setProperty("--accent-h", accentH);
+    document.documentElement.style.setProperty("--accent-s", intensity);
 
-    // Update logo gradient to match accent
+    // Update logo gradient to match accent + intensity
+    const s = intensity / 100;
     const logoGrad = document.getElementById("logoGrad");
     if (logoGrad) {
         const stops = logoGrad.querySelectorAll("stop");
         if (stops.length >= 2) {
-            stops[0].setAttribute("stop-color", `hsl(${accentH}, 90%, 66%)`);
-            stops[1].setAttribute("stop-color", `hsl(${(accentH - 23 + 360) % 360}, 84%, 67%)`);
+            stops[0].setAttribute("stop-color", `hsl(${accentH}, ${Math.round(90 * s)}%, 66%)`);
+            stops[1].setAttribute("stop-color", `hsl(${(accentH - 23 + 360) % 360}, ${Math.round(84 * s)}%, 67%)`);
         }
     }
 
     // Re-initialize Mermaid with new colors if already loaded
     if (typeof mermaid !== "undefined" && save) {
-        initMermaidTheme(accentH, base);
+        initMermaidTheme(accentH, base, intensity);
     }
 
     if (save) {
-        localStorage.setItem("dbds-theme", JSON.stringify({ base, accentH }));
+        localStorage.setItem("dbds-theme", JSON.stringify({ base, accentH, intensity }));
         showToast("テーマを変更しました", "success");
     }
 }
 
-function initMermaidTheme(h, base) {
+function initMermaidTheme(h, base, intensity) {
     const isDark = base === "dark";
-    const textPrimary = isDark ? `hsl(${h}, 100%, 92%)` : `hsl(${h}, 50%, 20%)`;
-    const textSecondary = isDark ? `hsl(${h}, 97%, 85%)` : `hsl(${h}, 45%, 30%)`;
-    const textTertiary = isDark ? `hsl(${h}, 95%, 75%)` : `hsl(${h}, 40%, 40%)`;
-    const accent = isDark ? `hsl(${h}, 90%, 66%)` : `hsl(${h}, 70%, 50%)`;
-    const accentDark = isDark ? `hsl(${h}, 80%, 55%)` : `hsl(${h}, 65%, 42%)`;
-    const accentBg = isDark ? `hsla(${h}, 90%, 66%, 0.15)` : `hsla(${h}, 70%, 50%, 0.10)`;
-    const accentBgFaint = isDark ? `hsla(${h}, 84%, 67%, 0.08)` : `hsla(${h}, 60%, 50%, 0.06)`;
-    const entityBg = isDark ? `hsla(${h}, 90%, 66%, 0.12)` : `hsla(${h}, 60%, 92%, 1)`;
+    const si = (intensity || 100) / 100;
+    const S = (v) => Math.round(v * si);
+    const textPrimary = isDark ? `hsl(${h}, ${S(100)}%, 92%)` : `hsl(${h}, ${S(50)}%, 20%)`;
+    const textSecondary = isDark ? `hsl(${h}, ${S(97)}%, 85%)` : `hsl(${h}, ${S(45)}%, 30%)`;
+    const textTertiary = isDark ? `hsl(${h}, ${S(95)}%, 75%)` : `hsl(${h}, ${S(40)}%, 40%)`;
+    const accent = isDark ? `hsl(${h}, ${S(90)}%, 66%)` : `hsl(${h}, ${S(70)}%, 50%)`;
+    const accentDark = isDark ? `hsl(${h}, ${S(80)}%, 55%)` : `hsl(${h}, ${S(65)}%, 42%)`;
+    const accentBg = isDark ? `hsla(${h}, ${S(90)}%, 66%, 0.15)` : `hsla(${h}, ${S(70)}%, 50%, 0.10)`;
+    const accentBgFaint = isDark ? `hsla(${h}, ${S(84)}%, 67%, 0.08)` : `hsla(${h}, ${S(60)}%, 50%, 0.06)`;
+    const entityBg = isDark ? `hsla(${h}, ${S(90)}%, 66%, 0.12)` : `hsla(${h}, ${S(60)}%, 92%, 1)`;
     const labelBg = isDark ? "rgba(15, 12, 30, 0.8)" : "rgba(255, 255, 255, 0.92)";
     const bgColor = isDark ? "transparent" : "transparent";
 
@@ -129,7 +167,7 @@ function initMermaidTheme(h, base) {
             mainBkg: entityBg,
             nodeBorder: accent,
             clusterBkg: accentBgFaint,
-            clusterBorder: `hsla(${h}, 90%, 66%, 0.3)`,
+            clusterBorder: `hsla(${h}, ${S(90)}%, 66%, 0.3)`,
             primaryTextColor: textPrimary,
             secondaryTextColor: textSecondary,
             tertiaryTextColor: textTertiary,
@@ -138,15 +176,15 @@ function initMermaidTheme(h, base) {
             entityBkg: entityBg,
             edgeLabelBackground: labelBg,
             classText: textPrimary,
-            actorBkg: isDark ? `hsla(${h}, 90%, 66%, 0.20)` : `hsla(${h}, 60%, 50%, 0.12)`,
+            actorBkg: isDark ? `hsla(${h}, ${S(90)}%, 66%, 0.20)` : `hsla(${h}, ${S(60)}%, 50%, 0.12)`,
             actorBorder: accent,
             actorTextColor: textPrimary,
             signalColor: textSecondary,
             signalTextColor: textPrimary,
-            noteBkgColor: isDark ? accentBgFaint : `hsla(${h}, 50%, 50%, 0.08)`,
-            noteBorderColor: `hsl(${(h - 23 + 360) % 360}, 84%, ${isDark ? 67 : 50}%)`,
+            noteBkgColor: isDark ? accentBgFaint : `hsla(${h}, ${S(50)}%, 50%, 0.08)`,
+            noteBorderColor: `hsl(${(h - 23 + 360) % 360}, ${S(84)}%, ${isDark ? 67 : 50}%)`,
             noteTextColor: textPrimary,
-            activationBkgColor: isDark ? `hsla(${h}, 90%, 66%, 0.20)` : `hsla(${h}, 60%, 50%, 0.12)`,
+            activationBkgColor: isDark ? `hsla(${h}, ${S(90)}%, 66%, 0.20)` : `hsla(${h}, ${S(60)}%, 50%, 0.12)`,
             activationBorderColor: accent,
             labelBoxBkgColor: labelBg,
             labelBoxBorderColor: accentDark,
@@ -538,7 +576,8 @@ function initMermaid() {
     const saved = JSON.parse(localStorage.getItem("dbds-theme") || "{}");
     const h = saved.accentH ?? 263;
     const base = saved.base || "dark";
-    initMermaidTheme(h, base);
+    const si = saved.intensity ?? 100;
+    initMermaidTheme(h, base, si);
 
     document.getElementById("btnRenderMermaid").addEventListener("click", renderMermaid);
     document.getElementById("btnMermaidSample").addEventListener("click", loadSampleMermaid);

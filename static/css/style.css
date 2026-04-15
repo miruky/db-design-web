@@ -7,44 +7,46 @@
 :root {
     /* Accent hue — changed by theme picker (0–360) */
     --accent-h: 263;
+    --accent-s: 100; /* saturation intensity (30–150) controlled by slider */
     --accent-h2: calc(var(--accent-h) - 23);
     --accent-h3: calc(var(--accent-h) + 29);
 
-    /* Accent named shades */
-    --ac-100: hsl(var(--accent-h), 80%, 94%);
-    --ac-200: hsl(var(--accent-h), 100%, 92%);
-    --ac-300: hsl(var(--accent-h), 97%, 85%);
-    --ac-400: hsl(var(--accent-h), 95%, 75%);
-    --ac-500: hsl(var(--accent-h), 90%, 66%);
-    --ac-600: hsl(var(--accent-h), 81%, 56%);
-    --ac-700: hsl(var(--accent-h), 80%, 55%);
-    --ac-800: hsl(var(--accent-h), 70%, 40%);
-    --ac-900: hsl(var(--accent-h), 65%, 32%);
-    --ac2-500: hsl(var(--accent-h2), 84%, 67%);
-    --ac2-600: hsl(var(--accent-h2), 75%, 59%);
+    /* Accent named shades — saturation scales with --accent-s */
+    --ac-100: hsl(var(--accent-h), calc(80% * var(--accent-s) / 100), 94%);
+    --ac-200: hsl(var(--accent-h), calc(100% * var(--accent-s) / 100), 92%);
+    --ac-300: hsl(var(--accent-h), calc(97% * var(--accent-s) / 100), 85%);
+    --ac-400: hsl(var(--accent-h), calc(95% * var(--accent-s) / 100), 75%);
+    --ac-500: hsl(var(--accent-h), calc(90% * var(--accent-s) / 100), 66%);
+    --ac-600: hsl(var(--accent-h), calc(81% * var(--accent-s) / 100), 56%);
+    --ac-700: hsl(var(--accent-h), calc(80% * var(--accent-s) / 100), 55%);
+    --ac-800: hsl(var(--accent-h), calc(70% * var(--accent-s) / 100), 40%);
+    --ac-900: hsl(var(--accent-h), calc(65% * var(--accent-s) / 100), 32%);
+    --ac2-500: hsl(var(--accent-h2), calc(84% * var(--accent-s) / 100), 67%);
+    --ac2-600: hsl(var(--accent-h2), calc(75% * var(--accent-s) / 100), 59%);
 
     /* Base: Dark (default) */
-    --bg-deep: #07060d;
-    --bg-dark: #0d0c16;
-    --editor-bg: rgba(4, 2, 12, 0.60);
-    --editor-bg-line: rgba(4, 2, 12, 0.35);
-    --editor-result-bg: rgba(6, 4, 16, 0.35);
+    /* Base: Dark (default) — deep inky tones with accent-tinted glass */
+    --bg-deep: #06050c;
+    --bg-dark: #0b0a14;
+    --editor-bg: rgba(6, 4, 16, 0.65);
+    --editor-bg-line: rgba(6, 4, 16, 0.40);
+    --editor-result-bg: rgba(8, 6, 20, 0.40);
 
-    --glass-bg: rgba(13, 10, 28, 0.55);
-    --glass-bg-hover: rgba(22, 18, 45, 0.60);
-    --glass-border: hsla(var(--accent-h), 90%, 66%, 0.12);
-    --glass-border-hover: hsla(var(--accent-h), 90%, 66%, 0.28);
-    --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.45);
+    --glass-bg: rgba(16, 12, 32, 0.62);
+    --glass-bg-hover: rgba(24, 20, 48, 0.68);
+    --glass-border: hsla(var(--accent-h), calc(90% * var(--accent-s) / 100), 66%, 0.15);
+    --glass-border-hover: hsla(var(--accent-h), calc(90% * var(--accent-s) / 100), 66%, 0.35);
+    --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.50), 0 0 80px hsla(var(--accent-h), 60%, 50%, 0.04);
     --glass-blur: 24px;
 
-    --text-primary: rgba(255, 255, 255, 0.93);
-    --text-secondary: rgba(255, 255, 255, 0.58);
-    --text-muted: rgba(255, 255, 255, 0.30);
-    --text-accent: var(--ac-300);
-    --cell-text: rgba(255, 255, 255, 0.90);
-    --editor-text: var(--ac-100);
-    --line-num-color: hsla(var(--accent-h), 90%, 66%, 0.28);
-    --line-num-border: hsla(var(--accent-h), 90%, 66%, 0.08);
+    --text-primary: rgba(255, 255, 255, 0.95);
+    --text-secondary: rgba(255, 255, 255, 0.62);
+    --text-muted: rgba(255, 255, 255, 0.32);
+    --text-accent: var(--ac-400);
+    --cell-text: rgba(255, 255, 255, 0.92);
+    --editor-text: var(--ac-200);
+    --line-num-color: hsla(var(--accent-h), calc(80% * var(--accent-s) / 100), 66%, 0.35);
+    --line-num-border: hsla(var(--accent-h), calc(80% * var(--accent-s) / 100), 66%, 0.10);
 
     --success: #34d399;
     --error: #f87171;
@@ -61,49 +63,49 @@
     --font-body: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     --font-mono: 'JetBrains Mono', 'SF Mono', 'Fira Code', monospace;
 
-    --selection-bg: hsla(var(--accent-h), 90%, 66%, 0.40);
-    --scrollbar-thumb: hsla(var(--accent-h), 90%, 66%, 0.25);
-    --scrollbar-thumb-hover: hsla(var(--accent-h), 90%, 66%, 0.45);
-    --orb-opacity: 0.28;
-    --orb-opacity-dim: 0.16;
+    --selection-bg: hsla(var(--accent-h), calc(90% * var(--accent-s) / 100), 66%, 0.40);
+    --scrollbar-thumb: hsla(var(--accent-h), calc(85% * var(--accent-s) / 100), 66%, 0.28);
+    --scrollbar-thumb-hover: hsla(var(--accent-h), calc(85% * var(--accent-s) / 100), 66%, 0.48);
+    --orb-opacity: 0.30;
+    --orb-opacity-dim: 0.18;
     --orb-opacity-dimmer: 0.14;
-    --toast-bg: rgba(13, 10, 28, 0.88);
+    --toast-bg: rgba(12, 10, 24, 0.92);
 }
 
 /* ---------- Light Base Theme ---------- */
 [data-base="light"] {
     /* Invert accent tints for legibility on light bg */
-    --ac-200: hsl(var(--accent-h), 60%, 32%);
-    --ac-300: hsl(var(--accent-h), 55%, 40%);
+    --ac-200: hsl(var(--accent-h), calc(60% * var(--accent-s) / 100), 32%);
+    --ac-300: hsl(var(--accent-h), calc(55% * var(--accent-s) / 100), 40%);
 
-    --bg-deep: hsl(var(--accent-h), 30%, 97%);
-    --bg-dark: hsl(var(--accent-h), 25%, 94%);
-    --editor-bg: hsla(var(--accent-h), 20%, 94%, 0.75);
-    --editor-bg-line: hsla(var(--accent-h), 20%, 92%, 0.50);
-    --editor-result-bg: hsla(var(--accent-h), 15%, 96%, 0.50);
+    --bg-deep: hsl(var(--accent-h), calc(30% * var(--accent-s) / 100), 97%);
+    --bg-dark: hsl(var(--accent-h), calc(25% * var(--accent-s) / 100), 94%);
+    --editor-bg: hsla(var(--accent-h), calc(20% * var(--accent-s) / 100), 94%, 0.75);
+    --editor-bg-line: hsla(var(--accent-h), calc(20% * var(--accent-s) / 100), 92%, 0.50);
+    --editor-result-bg: hsla(var(--accent-h), calc(15% * var(--accent-s) / 100), 96%, 0.50);
 
-    --glass-bg: rgba(255, 255, 255, 0.72);
-    --glass-bg-hover: rgba(255, 255, 255, 0.82);
-    --glass-border: hsla(var(--accent-h), 50%, 50%, 0.12);
-    --glass-border-hover: hsla(var(--accent-h), 50%, 50%, 0.25);
-    --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.06);
+    --glass-bg: rgba(255, 255, 255, 0.68);
+    --glass-bg-hover: rgba(255, 255, 255, 0.78);
+    --glass-border: hsla(var(--accent-h), calc(50% * var(--accent-s) / 100), 50%, 0.15);
+    --glass-border-hover: hsla(var(--accent-h), calc(50% * var(--accent-s) / 100), 50%, 0.30);
+    --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.08), 0 0 60px hsla(var(--accent-h), 40%, 50%, 0.04);
 
-    --text-primary: rgba(15, 10, 30, 0.90);
-    --text-secondary: rgba(15, 10, 30, 0.58);
-    --text-muted: rgba(15, 10, 30, 0.30);
-    --text-accent: hsl(var(--accent-h), 70%, 45%);
-    --cell-text: rgba(15, 10, 30, 0.85);
-    --editor-text: hsl(var(--accent-h), 50%, 25%);
-    --line-num-color: hsla(var(--accent-h), 40%, 50%, 0.40);
-    --line-num-border: hsla(var(--accent-h), 40%, 50%, 0.12);
+    --text-primary: rgba(10, 8, 24, 0.92);
+    --text-secondary: rgba(10, 8, 24, 0.60);
+    --text-muted: rgba(10, 8, 24, 0.32);
+    --text-accent: hsl(var(--accent-h), calc(75% * var(--accent-s) / 100), 42%);
+    --cell-text: rgba(10, 8, 24, 0.88);
+    --editor-text: hsl(var(--accent-h), calc(55% * var(--accent-s) / 100), 22%);
+    --line-num-color: hsla(var(--accent-h), calc(45% * var(--accent-s) / 100), 50%, 0.45);
+    --line-num-border: hsla(var(--accent-h), calc(45% * var(--accent-s) / 100), 50%, 0.14);
 
-    --selection-bg: hsla(var(--accent-h), 80%, 66%, 0.25);
-    --scrollbar-thumb: hsla(var(--accent-h), 50%, 50%, 0.20);
-    --scrollbar-thumb-hover: hsla(var(--accent-h), 50%, 50%, 0.35);
-    --orb-opacity: 0.12;
-    --orb-opacity-dim: 0.08;
+    --selection-bg: hsla(var(--accent-h), calc(80% * var(--accent-s) / 100), 60%, 0.25);
+    --scrollbar-thumb: hsla(var(--accent-h), calc(50% * var(--accent-s) / 100), 50%, 0.22);
+    --scrollbar-thumb-hover: hsla(var(--accent-h), calc(50% * var(--accent-s) / 100), 50%, 0.38);
+    --orb-opacity: 0.14;
+    --orb-opacity-dim: 0.09;
     --orb-opacity-dimmer: 0.06;
-    --toast-bg: rgba(255, 255, 255, 0.92);
+    --toast-bg: rgba(255, 255, 255, 0.94);
 }
 [data-base="light"] .toast { color: var(--text-primary); border-color: var(--glass-border); }
 
@@ -225,7 +227,7 @@ body {
 
 .theme-dropdown {
     position: absolute; top: calc(100% + 10px); right: 0;
-    width: 280px; padding: 18px;
+    width: 300px; padding: 18px;
     background: #110e20;
     backdrop-filter: blur(32px); -webkit-backdrop-filter: blur(32px);
     border: 1px solid hsla(var(--accent-h), 60%, 56%, 0.25);
@@ -285,14 +287,14 @@ body {
 .base-toggle-btn svg { width: 14px; height: 14px; }
 
 .accent-swatches {
-    display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px;
+    display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px;
 }
 .accent-swatch {
     width: 100%; aspect-ratio: 1; border-radius: 50%;
     border: 2px solid rgba(255, 255, 255, 0.08); cursor: pointer;
     transition: all var(--transition-fast);
     position: relative;
-    min-width: 24px; min-height: 24px;
+    min-width: 20px; min-height: 20px;
 }
 [data-base="light"] .accent-swatch { border-color: rgba(0, 0, 0, 0.06); }
 .accent-swatch:hover {
@@ -307,9 +309,47 @@ body {
 .accent-swatch.active::after {
     content: '✓'; position: absolute; inset: 0;
     display: flex; align-items: center; justify-content: center;
-    font-size: 0.6rem; font-weight: 700; color: #fff;
+    font-size: 0.55rem; font-weight: 700; color: #fff;
     text-shadow: 0 1px 3px rgba(0,0,0,0.5);
 }
+
+/* Intensity slider */
+.intensity-slider-wrap {
+    position: relative; height: 28px; display: flex; align-items: center;
+}
+.intensity-value {
+    float: right; font-size: 0.70rem; font-weight: 700;
+    color: var(--ac-400); letter-spacing: 0;
+}
+.intensity-slider {
+    -webkit-appearance: none; appearance: none;
+    width: 100%; height: 6px; border-radius: 3px;
+    background: linear-gradient(90deg,
+        hsla(var(--accent-h), 20%, 50%, 0.3),
+        hsla(var(--accent-h), 90%, 60%, 0.6),
+        hsla(var(--accent-h), 100%, 70%, 0.9)
+    );
+    outline: none; cursor: pointer; position: relative; z-index: 2;
+}
+.intensity-slider::-webkit-slider-thumb {
+    -webkit-appearance: none; appearance: none;
+    width: 18px; height: 18px; border-radius: 50%;
+    background: var(--ac-500);
+    border: 2.5px solid #fff;
+    box-shadow: 0 0 8px rgba(0,0,0,0.3), 0 0 16px hsla(var(--accent-h), 80%, 60%, 0.4);
+    cursor: pointer; transition: box-shadow 0.15s ease;
+}
+.intensity-slider::-webkit-slider-thumb:hover {
+    box-shadow: 0 0 12px rgba(0,0,0,0.4), 0 0 24px hsla(var(--accent-h), 80%, 60%, 0.6);
+}
+.intensity-slider::-moz-range-thumb {
+    width: 18px; height: 18px; border-radius: 50%;
+    background: var(--ac-500); border: 2.5px solid #fff;
+    box-shadow: 0 0 8px rgba(0,0,0,0.3), 0 0 16px hsla(var(--accent-h), 80%, 60%, 0.4);
+    cursor: pointer;
+}
+[data-base="light"] .intensity-slider::-webkit-slider-thumb { border-color: #333; }
+[data-base="light"] .intensity-slider::-moz-range-thumb { border-color: #333; }
 
 /* ---------- Tab Navigation ---------- */
 .tab-nav {
@@ -833,24 +873,24 @@ body {
 .mermaid-output svg marker#flowchart-crossStart path,
 .mermaid-output svg marker[id^="crosshead"] path,
 .mermaid-output svg marker[id^="arrowhead"] path { fill: var(--ac-500) !important; }
-.mermaid-output svg .entityBox { fill: hsla(var(--accent-h), 90%, 66%, 0.10) !important; stroke: var(--ac-500) !important; stroke-width: 1.5px !important; }
+.mermaid-output svg .entityBox { fill: hsla(var(--accent-h), calc(90% * var(--accent-s) / 100), 66%, 0.10) !important; stroke: var(--ac-500) !important; stroke-width: 1.5px !important; }
 .mermaid-output svg .entityLabel { fill: var(--ac-200) !important; }
 .mermaid-output svg .relationshipLabelBox { fill: var(--glass-bg) !important; }
 .mermaid-output svg .relationshipLine { stroke: var(--ac-500) !important; stroke-width: 1.5px !important; }
-.mermaid-output svg .attributeBoxEven, .mermaid-output svg .attributeBoxOdd { stroke: var(--ac-500) !important; stroke-width: 0.8px !important; fill: hsla(var(--accent-h), 90%, 66%, 0.05) !important; }
+.mermaid-output svg .attributeBoxEven, .mermaid-output svg .attributeBoxOdd { stroke: var(--ac-500) !important; stroke-width: 0.8px !important; fill: hsla(var(--accent-h), calc(90% * var(--accent-s) / 100), 66%, 0.05) !important; }
 .mermaid-output svg .er.relationshipLine { stroke: var(--ac-500) !important; stroke-width: 1.5px !important; }
 .mermaid-output svg circle.relationshipEnd { fill: transparent !important; stroke: var(--ac-500) !important; stroke-width: 1.5px !important; }
-.mermaid-output svg .entityTitleBox { fill: hsla(var(--accent-h), 90%, 66%, 0.18) !important; }
+.mermaid-output svg .entityTitleBox { fill: hsla(var(--accent-h), calc(90% * var(--accent-s) / 100), 66%, 0.18) !important; }
 
-[data-base="light"] .mermaid-output svg .entityBox { fill: hsla(var(--accent-h), 60%, 92%, 1) !important; }
+[data-base="light"] .mermaid-output svg .entityBox { fill: hsla(var(--accent-h), calc(60% * var(--accent-s) / 100), 92%, 1) !important; }
 [data-base="light"] .mermaid-output svg .entityLabel { fill: var(--ac-800) !important; }
 [data-base="light"] .mermaid-output svg .node rect,
 [data-base="light"] .mermaid-output svg .node polygon,
-[data-base="light"] .mermaid-output svg .node circle { fill: hsla(var(--accent-h), 60%, 94%, 1) !important; }
+[data-base="light"] .mermaid-output svg .node circle { fill: hsla(var(--accent-h), calc(60% * var(--accent-s) / 100), 94%, 1) !important; }
 [data-base="light"] .mermaid-output svg .edgeLabel { background-color: rgba(255,255,255,0.9) !important; }
 [data-base="light"] .mermaid-output svg .relationshipLabelBox { fill: rgba(255,255,255,0.9) !important; }
-[data-base="light"] .mermaid-output svg .attributeBoxEven, [data-base="light"] .mermaid-output svg .attributeBoxOdd { fill: hsla(var(--accent-h), 50%, 96%, 1) !important; }
-[data-base="light"] .mermaid-output svg .entityTitleBox { fill: hsla(var(--accent-h), 60%, 88%, 1) !important; }
+[data-base="light"] .mermaid-output svg .attributeBoxEven, [data-base="light"] .mermaid-output svg .attributeBoxOdd { fill: hsla(var(--accent-h), calc(50% * var(--accent-s) / 100), 96%, 1) !important; }
+[data-base="light"] .mermaid-output svg .entityTitleBox { fill: hsla(var(--accent-h), calc(60% * var(--accent-s) / 100), 88%, 1) !important; }
 
 /* ---------- Responsive ---------- */
 @media (max-width: 1024px) { .split-view { grid-template-columns: 1fr; } }
