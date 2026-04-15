@@ -650,14 +650,15 @@ body {
 .preview-expanded-overlay .markdown-preview { color: var(--text-primary); }
 .preview-expanded-overlay.expand-no-autoclose { cursor: default; }
 .expand-close-btn {
-    position: sticky; bottom: 0; left: 50%;
+    position: fixed;
+    z-index: 9999;
     display: flex; align-items: center; justify-content: center;
-    width: 44px; height: 44px; margin: 24px auto 0;
+    width: 40px; height: 40px;
     border-radius: 50%; border: 1px solid hsla(var(--accent-h), 60%, 60%, 0.3);
     background: var(--glass-bg); color: var(--text-secondary);
     cursor: pointer; backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
     box-shadow: 0 4px 16px rgba(0,0,0,0.3);
-    transition: all var(--transition-fast); z-index: 10;
+    transition: all var(--transition-fast);
 }
 .expand-close-btn:hover {
     background: hsla(var(--accent-h), 80%, 60%, 0.2);
@@ -669,6 +670,7 @@ body {
     background: rgba(255,255,255,0.85);
     box-shadow: 0 4px 16px rgba(0,0,0,0.1);
 }
+body.expand-open { overflow: hidden; }
 .diagram-preview,
 .markdown-preview {
     cursor: zoom-in;

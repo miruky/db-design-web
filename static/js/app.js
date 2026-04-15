@@ -1155,15 +1155,8 @@ function expandPreview(panel) {
     overlay.innerHTML = panel.innerHTML;
     document.body.appendChild(overlay);
 
-    // Add close button for Markdown
-    if (isMarkdown) {
-        const closeBtn = document.createElement("button");
-        closeBtn.className = "expand-close-btn";
-        closeBtn.innerHTML = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>`;
-        closeBtn.title = "閉じる";
-        closeBtn.addEventListener("click", (e) => { e.stopPropagation(); closeExpand(); });
-        overlay.appendChild(closeBtn);
-    }
+    // Prevent background scroll
+    document.body.classList.add("expand-open");
 
     panel._expandBackdrop = backdrop;
     panel._expandOverlay = overlay;
@@ -1171,6 +1164,8 @@ function expandPreview(panel) {
     const closeExpand = () => {
         overlay.remove();
         backdrop.remove();
+        if (panel._closeBtn) { panel._closeBtn.remove(); panel._closeBtn = null; }
+        document.body.classList.remove("expand-open");
         panel._expandBackdrop = null;
         panel._expandOverlay = null;
         if (panel._escHandler) {
@@ -1178,6 +1173,23 @@ function expandPreview(panel) {
             panel._escHandler = null;
         }
     };
+
+    // Add close button for Markdown — positioned outside overlay to top-right
+    if (isMarkdown) {
+        const closeBtn = document.createElement("button");
+        closeBtn.className = "expand-close-btn";
+        closeBtn.innerHTML = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>`;
+        closeBtn.title = "閉じる (Esc)";
+        closeBtn.addEventListener("click", (e) => { e.stopPropagation(); closeExpand(); });
+        document.body.appendChild(closeBtn);
+        panel._closeBtn = closeBtn;
+        // Position button to top-right of overlay after render
+        requestAnimationFrame(() => {
+            const rect = overlay.getBoundingClientRect();
+            closeBtn.style.top = (rect.top - 12) + "px";
+            closeBtn.style.left = (rect.right + 12) + "px";
+        });
+    }
 
     // Markdown: only close via button or Escape. Others: click anywhere to close.
     if (!isMarkdown) {
