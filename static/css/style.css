@@ -648,6 +648,27 @@ body {
 .preview-expanded-overlay .plantuml-output svg,
 .preview-expanded-overlay .plantuml-output img { max-width: 100%; height: auto; }
 .preview-expanded-overlay .markdown-preview { color: var(--text-primary); }
+.preview-expanded-overlay.expand-no-autoclose { cursor: default; }
+.expand-close-btn {
+    position: sticky; bottom: 0; left: 50%;
+    display: flex; align-items: center; justify-content: center;
+    width: 44px; height: 44px; margin: 24px auto 0;
+    border-radius: 50%; border: 1px solid hsla(var(--accent-h), 60%, 60%, 0.3);
+    background: var(--glass-bg); color: var(--text-secondary);
+    cursor: pointer; backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+    box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+    transition: all var(--transition-fast); z-index: 10;
+}
+.expand-close-btn:hover {
+    background: hsla(var(--accent-h), 80%, 60%, 0.2);
+    color: var(--text-primary);
+    border-color: var(--ac-500);
+    transform: scale(1.1);
+}
+[data-base="light"] .expand-close-btn {
+    background: rgba(255,255,255,0.85);
+    box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+}
 .diagram-preview,
 .markdown-preview {
     cursor: zoom-in;

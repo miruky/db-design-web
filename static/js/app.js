@@ -1138,6 +1138,8 @@ function downloadPreviewAsImage(containerId, filename) {
 }
 
 function expandPreview(panel) {
+    const isMarkdown = panel.classList.contains("markdown-preview");
+
     const backdrop = document.createElement("div");
     backdrop.className = "expand-backdrop";
     document.body.appendChild(backdrop);
@@ -1145,12 +1147,23 @@ function expandPreview(panel) {
     // Clone content into an overlay to escape backdrop-filter stacking context
     const overlay = document.createElement("div");
     overlay.className = "preview-expanded-overlay";
+    if (isMarkdown) overlay.classList.add("expand-no-autoclose");
     // Copy classes from panel so CSS selectors like .markdown-preview still work
     panel.classList.forEach(cls => {
         if (cls !== "panel-body") overlay.classList.add(cls);
     });
     overlay.innerHTML = panel.innerHTML;
     document.body.appendChild(overlay);
+
+    // Add close button for Markdown
+    if (isMarkdown) {
+        const closeBtn = document.createElement("button");
+        closeBtn.className = "expand-close-btn";
+        closeBtn.innerHTML = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>`;
+        closeBtn.title = "閉じる";
+        closeBtn.addEventListener("click", (e) => { e.stopPropagation(); closeExpand(); });
+        overlay.appendChild(closeBtn);
+    }
 
     panel._expandBackdrop = backdrop;
     panel._expandOverlay = overlay;
@@ -1166,8 +1179,14 @@ function expandPreview(panel) {
         }
     };
 
-    backdrop.addEventListener("click", closeExpand);
-    overlay.addEventListener("click", closeExpand);
+    // Markdown: only close via button or Escape. Others: click anywhere to close.
+    if (!isMarkdown) {
+        backdrop.addEventListener("click", closeExpand);
+        overlay.addEventListener("click", closeExpand);
+    } else {
+        backdrop.addEventListener("click", (e) => e.stopPropagation());
+        overlay.addEventListener("click", (e) => e.stopPropagation());
+    }
 
     const escHandler = (e) => {
         if (e.key === "Escape") closeExpand();
