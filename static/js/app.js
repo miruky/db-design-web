@@ -122,6 +122,7 @@ function applyTheme(base, accentH, intensity, save) {
     document.documentElement.setAttribute("data-base", base);
     document.documentElement.style.setProperty("--accent-h", accentH);
     document.documentElement.style.setProperty("--accent-s", intensity);
+    document.documentElement.style.setProperty("--accent-i", intensity / 100);
 
     // Update logo gradient to match accent + intensity
     const s = intensity / 100;
